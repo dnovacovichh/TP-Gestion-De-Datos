@@ -1,40 +1,34 @@
 -- Eliminar FK compuesta si existe
-IF OBJECT_ID('los_helechos.Detalle_Factura', 'U') IS NOT NULL
+IF OBJECT_ID('Detalle_Factura', 'U') IS NOT NULL
 BEGIN
     IF EXISTS (
         SELECT * FROM sys.foreign_keys 
         WHERE name = 'fk_detallefactura_pedido'
     )
     BEGIN
-        ALTER TABLE los_helechos.Detalle_Factura 
+        ALTER TABLE Detalle_Factura 
         DROP CONSTRAINT fk_detallefactura_pedido;
     END
 END
 
 -- Eliminar todas las tablas (si existen)
-DROP TABLE IF EXISTS los_helechos.Envio;
-DROP TABLE IF EXISTS los_helechos.Detalle_Factura;
-DROP TABLE IF EXISTS los_helechos.Factura;
-DROP TABLE IF EXISTS los_helechos.CancelacionPedido;
-DROP TABLE IF EXISTS los_helechos.Detalle_Pedido;
-DROP TABLE IF EXISTS los_helechos.Pedido;
-DROP TABLE IF EXISTS los_helechos.Sillon;
-DROP TABLE IF EXISTS los_helechos.Detalle_Compra;
-DROP TABLE IF EXISTS los_helechos.Compra;
-DROP TABLE IF EXISTS los_helechos.Cliente;
-DROP TABLE IF EXISTS los_helechos.Sucursal;
-DROP TABLE IF EXISTS los_helechos.Proveedor;
-DROP TABLE IF EXISTS los_helechos.Localidad;
-DROP TABLE IF EXISTS los_helechos.Relleno;
-DROP TABLE IF EXISTS los_helechos.Madera;
-DROP TABLE IF EXISTS los_helechos.Tela;
-DROP TABLE IF EXISTS los_helechos.Sillon_Medida;
-DROP TABLE IF EXISTS los_helechos.Sillon_Modelo;
-DROP TABLE IF EXISTS los_helechos.Material;
-DROP TABLE IF EXISTS los_helechos.Provincia;
-
--- Eliminar el esquema si existe
-IF EXISTS (SELECT * FROM sys.schemas WHERE name = 'los_helechos')
-BEGIN
-    DROP SCHEMA los_helechos;
-END
+DROP TABLE IF EXISTS Envio;
+DROP TABLE IF EXISTS Detalle_Factura;
+DROP TABLE IF EXISTS Factura;
+DROP TABLE IF EXISTS CancelacionPedido;
+DROP TABLE IF EXISTS Detalle_Pedido;
+DROP TABLE IF EXISTS Pedido;
+DROP TABLE IF EXISTS Sillon;
+DROP TABLE IF EXISTS Detalle_Compra;
+DROP TABLE IF EXISTS Compra;
+DROP TABLE IF EXISTS Cliente;
+DROP TABLE IF EXISTS Sucursal;
+DROP TABLE IF EXISTS Proveedor;
+DROP TABLE IF EXISTS Localidad;
+DROP TABLE IF EXISTS Relleno;
+DROP TABLE IF EXISTS Madera;
+DROP TABLE IF EXISTS Tela;
+DROP TABLE IF EXISTS Sillon_Medida;
+DROP TABLE IF EXISTS Sillon_Modelo;
+DROP TABLE IF EXISTS Material;
+DROP TABLE IF EXISTS Provincia;
