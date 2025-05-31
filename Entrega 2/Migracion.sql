@@ -13,11 +13,19 @@ FROM gd_esquema.Maestra;
 -- Inserts para tabla Localidad
 -- ========================================
 INSERT INTO Localidad (nombre_localidad, provincia)
-SELECT DISTINCT 
-    Sucursal_Localidad,
-    p.cod_prov
-FROM gd_esquema.Maestra tm
-JOIN Provincia p ON tm.Sucursal_Provincia = p.nombre_prov;
+SELECT DISTINCT loc, p.cod_prov
+FROM (
+    SELECT Sucursal_Localidad AS loc, Sucursal_Provincia AS prov
+    FROM gd_esquema.Maestra
+    UNION
+    SELECT Cliente_Localidad, Cliente_Provincia
+    FROM gd_esquema.Maestra
+    UNION
+    SELECT Proveedor_Localidad, Proveedor_Provincia
+    FROM gd_esquema.Maestra
+) AS all_loc
+JOIN Provincia p ON all_loc.prov = p.nombre_prov
+WHERE loc IS NOT NULL;
 
 -- ========================================
 -- Inserts para tabla Sucursal
@@ -38,7 +46,7 @@ JOIN Localidad l ON tm.Sucursal_Localidad = l.nombre_localidad;
 -- Inserts para tabla Cliente
 -- ========================================
 INSERT INTO Cliente (nro_cliente, dni, localidad, nombre, apellido, fecha_nacimiento, mail, direccion, telefono)
-SELECT DISTINCT 
+SELECT DISTINCT
     ROW_NUMBER() OVER (ORDER BY Cliente_Dni) AS nro_cliente,
     Cliente_Dni,
     l.cod_localidad,
@@ -49,7 +57,10 @@ SELECT DISTINCT
     Cliente_Direccion,
     Cliente_Telefono
 FROM gd_esquema.Maestra tm
-JOIN Localidad l ON tm.Cliente_Localidad = l.nombre_localidad;
+JOIN Provincia p ON tm.Cliente_Provincia = p.nombre_prov
+JOIN Localidad l ON tm.Cliente_Localidad = l.nombre_localidad AND l.provincia = p.cod_prov;
+
+
 
 -- ========================================
 -- Inserts para tabla Proveedor
