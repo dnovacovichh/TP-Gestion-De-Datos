@@ -1,0 +1,92 @@
+CREATE TABLE Provincia (
+    cod_prov INT PRIMARY KEY IDENTITY(1,1),
+    nombre_prov NVARCHAR(255)
+);
+
+CREATE TABLE Localidad (
+    cod_localidad INT PRIMARY KEY IDENTITY(1,1),
+    nombre_localidad NVARCHAR(255),
+    provincia INT,
+    FOREIGN KEY (provincia) REFERENCES Provincia(cod_prov)
+);
+
+CREATE TABLE Cliente (
+    nro_cliente BIGINT PRIMARY KEY IDENTITY(1,1),
+    dni BIGINT,
+    localidad INT,
+    nombre NVARCHAR(255),
+    apellido NVARCHAR(255),
+    fecha_nacimiento DATETIME,
+    mail NVARCHAR(255),
+    direccion NVARCHAR(255),
+    telefono NVARCHAR(255),
+    FOREIGN KEY (localidad) REFERENCES Localidad(cod_localidad)
+);
+
+CREATE TABLE Sucursal (
+    id_sucursal INT PRIMARY KEY IDENTITY(1,1),
+    localidad INT,
+    nro_sucursal BIGINT,
+    direccion NVARCHAR(255),
+    telefono NVARCHAR(255),
+    mail NVARCHAR(255),
+    FOREIGN KEY (localidad) REFERENCES Localidad(cod_localidad)
+);
+
+CREATE TABLE Sillon_Modelo (
+    codigo_modelo BIGINT PRIMARY KEY IDENTITY(1,1),
+    nombre NVARCHAR(255),
+    descripcion NVARCHAR(255),
+    precio_base DECIMAL(10,2)
+);
+
+CREATE TABLE Sillon_Medida (
+    id_medida BIGINT PRIMARY KEY IDENTITY(1,1),
+    alto INT,
+    ancho INT,
+    profundidad INT,
+    precio_medida DECIMAL(10,2)
+);
+
+CREATE TABLE Material (
+    id_material INT PRIMARY KEY IDENTITY(1,1),
+    nombre NVARCHAR(255),
+    precio DECIMAL(10,2)
+);
+
+CREATE TABLE Tela (
+    id_tela INT PRIMARY KEY IDENTITY(1,1),
+    id_material INT,
+    color NVARCHAR(255),
+    textura NVARCHAR(255),
+    FOREIGN KEY (id_material) REFERENCES Material(id_material)
+);
+
+CREATE TABLE Madera (
+    id_madera INT PRIMARY KEY IDENTITY(1,1),
+    id_material INT,
+    nombre NVARCHAR(255),
+    descripcion NVARCHAR(255),
+    color NVARCHAR(255),
+    dureza NVARCHAR(255),
+    FOREIGN KEY (id_material) REFERENCES Material(id_material)
+);
+
+CREATE TABLE Relleno (
+    id_relleno INT PRIMARY KEY IDENTITY(1,1),
+    id_material INT,
+    nombre NVARCHAR(255),
+    descripcion NVARCHAR(255),
+    densidad DECIMAL(10,2),
+    FOREIGN KEY (id_material) REFERENCES Material(id_material)
+);
+
+CREATE TABLE Sillon (
+    id_sillon INT PRIMARY KEY IDENTITY(1,1),
+    codigo_modelo BIGINT,
+    id_medida BIGINT,
+    id_material INT,
+    FOREIGN KEY (codigo_modelo) REFERENCES Sillon_Modelo(codigo_modelo),
+    FOREIGN KEY (id_medida) REFERENCES Sillon_Medida(id_medida),
+    FOREIGN KEY (id_material) REFERENCES Material(id_material)
+);
