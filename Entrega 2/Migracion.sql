@@ -74,48 +74,47 @@ SELECT DISTINCT
     Material_Precio
 FROM gd_esquema.Maestra;
 
-
 -- ========================================
--- Inserts para tabla Tela
+-- Inserts para tabla Tela (solo tipo 'Tela')
 -- ========================================
-
-INSERT INTO Tela (id_tela, id_material, color, textura)
+INSERT INTO Tela (id_material, color, textura)
 SELECT DISTINCT 
-    ROW_NUMBER() OVER (ORDER BY Tela_Color) AS id_tela,
     m.id_material,
-    Tela_Color,
-    Tela_Textura
+    tm.Tela_Color,
+    tm.Tela_Textura
 FROM gd_esquema.Maestra tm
-JOIN Material m ON tm.Material_Nombre = m.nombre;
--- ========================================
+JOIN Material m ON tm.Material_Nombre = m.nombre
+WHERE tm.Material_Tipo = 'Tela' AND tm.Tela_Color IS NOT NULL;
 
 -- ========================================
--- Inserts para tabla Madera
+-- Inserts para tabla Madera (solo tipo 'Madera')
 -- ========================================
-INSERT INTO Madera (id_madera, id_material, nombre, descripcion, color, dureza)
+INSERT INTO Madera (id_material, nombre, descripcion, color, dureza)
 SELECT DISTINCT 
-    ROW_NUMBER() OVER (ORDER BY Madera_Color) AS id_madera,
     m.id_material,
-    Material_Nombre,
-    Material_Descripcion,
-    Madera_Color,
-    Madera_Dureza
+    tm.Material_Nombre,
+    tm.Material_Descripcion,
+    tm.Madera_Color,
+    tm.Madera_Dureza
 FROM gd_esquema.Maestra tm
-JOIN Material m ON tm.Material_Nombre = m.nombre;
+JOIN Material m ON tm.Material_Nombre = m.nombre
+WHERE tm.Material_Tipo = 'Madera' AND tm.Madera_Color IS NOT NULL;
 
 -- ========================================
--- Inserts para tabla Relleno
+-- Inserts para tabla Relleno (solo tipo 'Relleno')
 -- ========================================
-INSERT INTO Relleno (id_relleno, id_material, nombre, descripcion, densidad)
+INSERT INTO Relleno (id_material, nombre, descripcion, densidad)
 SELECT DISTINCT 
-    ROW_NUMBER() OVER (ORDER BY Relleno_Densidad) AS id_relleno,
     m.id_material,
-    Material_Nombre,
-    Material_Descripcion,
-    Relleno_Densidad
+    tm.Material_Nombre,
+    tm.Material_Descripcion,
+    tm.Relleno_Densidad
 FROM gd_esquema.Maestra tm
-JOIN Material m ON tm.Material_Nombre = m.nombre;
+JOIN Material m ON tm.Material_Nombre = m.nombre
+WHERE tm.Material_Tipo = 'Relleno' AND tm.Relleno_Densidad IS NOT NULL;
 
+
+/**
 -- ========================================
 -- Inserts para tabla Sillon_Modelo
 -- ========================================
@@ -256,3 +255,6 @@ SELECT DISTINCT
     Detalle_Compra_SubTotal
 FROM gd_esquema.Maestra tm
 JOIN Material m ON tm.Material_Nombre = m.nombre;
+
+
+**/
