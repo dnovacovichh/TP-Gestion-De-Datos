@@ -31,16 +31,16 @@ CREATE TABLE Sillon_Medida (
 
 -- SUBTIPOS DE MATERIAL
 CREATE TABLE Tela (
-    id_tela INT IDENTITY(1,1) PRIMARY KEY,
-    id_material INT UNIQUE,
+    id_tela INT PRIMARY KEY,
+    id_material INT,
     color VARCHAR(255),
     textura VARCHAR(255),
     FOREIGN KEY (id_material) REFERENCES Material(id_material)
 );
 
 CREATE TABLE Madera (
-    id_madera INT IDENTITY(1,1) PRIMARY KEY,
-    id_material INT UNIQUE,
+    id_madera INT PRIMARY KEY,
+    id_material INT,
     nombre VARCHAR(255),
     descripcion VARCHAR(255),
     color VARCHAR(255),
@@ -49,8 +49,8 @@ CREATE TABLE Madera (
 );
 
 CREATE TABLE Relleno (
-    id_relleno INT IDENTITY(1,1) PRIMARY KEY,
-    id_material INT UNIQUE,
+    id_relleno INT PRIMARY KEY,
+    id_material INT,
     nombre VARCHAR(255),
     descripcion VARCHAR(255),
     densidad DECIMAL,
