@@ -1,32 +1,37 @@
+
+USE GD1C2025;
+GO
+
+-- CREACIÓN DE TABLAS INDEPENDIENTES
 CREATE TABLE Provincia (
-    cod_prov INT PRIMARY KEY IDENTITY(1,1),
+    cod_prov INT IDENTITY(1,1) PRIMARY KEY,
     nombre_prov VARCHAR(255)
 );
 
 CREATE TABLE Material (
-    id_material INT PRIMARY KEY IDENTITY(1,1),
+    id_material INT IDENTITY(1,1) PRIMARY KEY,
     nombre VARCHAR(255),
     precio DECIMAL(10,2)
 );
 
 CREATE TABLE Sillon_Modelo (
-    codigo_modelo BIGINT PRIMARY KEY IDENTITY(1,1),
+    codigo_modelo BIGINT IDENTITY(1,1) PRIMARY KEY,
     nombre VARCHAR(255),
     descripcion VARCHAR(255),
     precio_base DECIMAL(10,2)
 );
 
 CREATE TABLE Sillon_Medida (
-    id_medida BIGINT PRIMARY KEY IDENTITY(1,1),
-    alto INT,
-    ancho INT,
-    profundidad INT,
-    precio_medida DECIMAL(10,2)
+    id_medida BIGINT IDENTITY(1,1) PRIMARY KEY,
+    alto DECIMAL(6,2),
+    ancho DECIMAL(6,2),
+    profundidad DECIMAL(6,2),
+    precio_medida DECIMAL
 );
 
 -- SUBTIPOS DE MATERIAL
 CREATE TABLE Tela (
-    id_tela INT PRIMARY KEY IDENTITY(1,1),
+    id_tela INT PRIMARY KEY,
     id_material INT UNIQUE,
     color VARCHAR(255),
     textura VARCHAR(255),
@@ -34,7 +39,7 @@ CREATE TABLE Tela (
 );
 
 CREATE TABLE Madera (
-    id_madera INT PRIMARY KEY IDENTITY(1,1),
+    id_madera INT PRIMARY KEY,
     id_material INT UNIQUE,
     nombre VARCHAR(255),
     descripcion VARCHAR(255),
@@ -44,16 +49,17 @@ CREATE TABLE Madera (
 );
 
 CREATE TABLE Relleno (
-    id_relleno INT PRIMARY KEY IDENTITY(1,1),
+    id_relleno INT PRIMARY KEY,
     id_material INT UNIQUE,
     nombre VARCHAR(255),
     descripcion VARCHAR(255),
-    densidad DECIMAL(10,2),
+    densidad DECIMAL,
     FOREIGN KEY (id_material) REFERENCES Material(id_material)
 );
 
+-- LOCALES Y CLIENTES
 CREATE TABLE Localidad (
-    cod_localidad INT PRIMARY KEY IDENTITY(1,1),
+    cod_localidad INT IDENTITY(1,1) PRIMARY KEY,
     nombre_localidad VARCHAR(255),
     provincia INT,
     FOREIGN KEY (provincia) REFERENCES Provincia(cod_prov)
@@ -70,7 +76,7 @@ CREATE TABLE Proveedor (
 );
 
 CREATE TABLE Sucursal (
-    id_sucursal INT PRIMARY KEY IDENTITY(1,1),
+    id_sucursal INT IDENTITY(1,1) PRIMARY KEY,
     localidad INT,
     nro_sucursal BIGINT,
     direccion VARCHAR(255),
@@ -92,8 +98,9 @@ CREATE TABLE Cliente (
     FOREIGN KEY (localidad) REFERENCES Localidad(cod_localidad)
 );
 
+-- COMPRAS
 CREATE TABLE Compra (
-    nro_compra DECIMAL(10,2) PRIMARY KEY,
+    nro_compra INT IDENTITY(1,1) PRIMARY KEY,
     suc_compra INT,
     fecha DATETIME,
     total DECIMAL(10,2),
@@ -103,9 +110,9 @@ CREATE TABLE Compra (
 );
 
 CREATE TABLE Detalle_Compra (
-    nro_compra DECIMAL(10,2),
+    nro_compra INT,
     material_comprado INT,
-    cantidad DECIMAL(10,2),
+    cantidad DECIMAL,
     precio DECIMAL(10,2),
     subtotal DECIMAL(10,2),
     PRIMARY KEY (nro_compra, material_comprado),
@@ -113,8 +120,9 @@ CREATE TABLE Detalle_Compra (
     FOREIGN KEY (material_comprado) REFERENCES Material(id_material)
 );
 
+-- SILLONES
 CREATE TABLE Sillon (
-    id_sillon INT PRIMARY KEY IDENTITY(1,1),
+    id_sillon INT IDENTITY(1,1) PRIMARY KEY,
     codigo_modelo BIGINT,
     id_medida BIGINT,
     id_material INT,
@@ -123,8 +131,9 @@ CREATE TABLE Sillon (
     FOREIGN KEY (id_material) REFERENCES Material(id_material)
 );
 
+-- PEDIDOS
 CREATE TABLE Pedido (
-    nro_pedido DECIMAL(10,2) PRIMARY KEY,
+    nro_pedido INT IDENTITY(1,1) PRIMARY KEY,
     fecha DATETIME,
     estado VARCHAR(50),
     total DECIMAL(10,2),
@@ -135,7 +144,7 @@ CREATE TABLE Pedido (
 );
 
 CREATE TABLE Detalle_Pedido (
-    nro_pedido DECIMAL(10,2),
+    nro_pedido INT,
     id_sillon INT,
     cantidad BIGINT,
     precio DECIMAL(10,2),
@@ -146,14 +155,15 @@ CREATE TABLE Detalle_Pedido (
 );
 
 CREATE TABLE CancelacionPedido (
-    nro_pedido DECIMAL(10,2) PRIMARY KEY,
+    nro_pedido INT IDENTITY(1,1) PRIMARY KEY,
     fecha_cancelacion DATETIME,
     motivo_cancelacion VARCHAR(255),
     FOREIGN KEY (nro_pedido) REFERENCES Pedido(nro_pedido)
 );
 
+-- FACTURACIÓN
 CREATE TABLE Factura (
-    nro_factura BIGINT PRIMARY KEY,
+    nro_factura BIGINT IDENTITY(1,1) PRIMARY KEY,
     id_sucursal INT,
     nro_cliente BIGINT,
     fecha DATETIME,
@@ -164,17 +174,19 @@ CREATE TABLE Factura (
 
 CREATE TABLE Detalle_Factura (
     nro_factura BIGINT,
-    nro_pedido DECIMAL(10,2),
+    nro_pedido INT,
     id_sillon INT,
-    cantidad DECIMAL(10,2),
+    cantidad DECIMAL,
     precio DECIMAL(10,2),
     subtotal DECIMAL(10,2),
     PRIMARY KEY (nro_factura, nro_pedido, id_sillon),
     FOREIGN KEY (nro_factura) REFERENCES Factura(nro_factura)
+    -- Nota: la FK compuesta a Detalle_Pedido se declara manualmente fuera
 );
 
+-- ENVÍOS
 CREATE TABLE Envio (
-    nro_envio DECIMAL(10,2) PRIMARY KEY,
+    nro_envio INT IDENTITY(1,1) PRIMARY KEY,
     nro_factura BIGINT,
     fecha_programada DATETIME,
     fecha_entrega DATETIME,
@@ -184,7 +196,7 @@ CREATE TABLE Envio (
     FOREIGN KEY (nro_factura) REFERENCES Factura(nro_factura)
 );
 
--- FK compuesta a Detalle_Pedido
+-- FK compuesta manual a Detalle_Pedido
 ALTER TABLE Detalle_Factura
 ADD CONSTRAINT fk_detallefactura_pedido
 FOREIGN KEY (nro_pedido, id_sillon)
