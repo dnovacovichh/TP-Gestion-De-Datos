@@ -1,0 +1,9 @@
+
+Ahora para generar el Script de migración, lo vamos a dividir en 2 partes.
+
+Primero necesitamos crear todas las tablas y luego consultar la tabla maestra para insertar los datos.
+
+Creación de tablas:
+
+1. Primero vamos a crear las tablas independientes (No tienen claves foraneas)
+2. Luego todas las demás
