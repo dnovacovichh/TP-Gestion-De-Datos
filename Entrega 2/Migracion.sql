@@ -4,14 +4,26 @@ GO
 
 -- ========================================
 -- Inserts para tabla Provincia
+PRINT 'Insertando datos en tabla Provincia...';
 -- ========================================
-INSERT INTO Provincia (nombre_prov)
-SELECT DISTINCT Sucursal_Provincia
-FROM gd_esquema.Maestra;
+
+INSERT INTO Provincia(nombre_prov)
+SELECT *
+FROM (
+    SELECT Sucursal_Provincia AS p FROM gd_esquema.Maestra
+    UNION
+    SELECT Cliente_Provincia FROM gd_esquema.Maestra
+    UNION
+    SELECT Proveedor_Provincia FROM gd_esquema.Maestra
+) AS todas
+WHERE p is not null;
 
 -- ========================================
 -- Inserts para tabla Localidad
--- ========================================
+-- Detalles: Se realiza un UNION entre todas las columnas que referencian localidades
+PRINT 'Insertando datos en tabla Localidad...';
+-- ========================================}
+
 INSERT INTO Localidad (nombre_localidad, provincia)
 SELECT DISTINCT loc, p.cod_prov
 FROM (
@@ -29,6 +41,7 @@ WHERE loc IS NOT NULL;
 
 -- ========================================
 -- Inserts para tabla Sucursal
+PRINT 'Insertando datos en tabla Sucursal...';
 -- ========================================
 INSERT INTO Sucursal (localidad, nro_sucursal, direccion, telefono, mail)
 SELECT DISTINCT 
@@ -40,14 +53,22 @@ SELECT DISTINCT
 FROM gd_esquema.Maestra tm
 JOIN Localidad l ON tm.Sucursal_Localidad = l.nombre_localidad;
 
-
-
 -- ========================================
 -- Inserts para tabla Cliente
+-- Detalles: Los clientes estan duplicados por eso utilización una partición y row_number
+PRINT 'Insertando datos en tabla Cliente...';
 -- ========================================
-INSERT INTO Cliente (nro_cliente, dni, localidad, nombre, apellido, fecha_nacimiento, mail, direccion, telefono)
-SELECT DISTINCT
-    ROW_NUMBER() OVER (ORDER BY Cliente_Dni) AS nro_cliente,
+WITH ClientesUnicos AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY Cliente_Dni 
+               ORDER BY Cliente_FechaNacimiento DESC
+           ) AS rn
+    FROM gd_esquema.Maestra
+    WHERE Cliente_Dni IS NOT NULL
+)
+INSERT INTO Cliente (dni, localidad, nombre, apellido, fecha_nacimiento, mail, direccion, telefono)
+SELECT
     Cliente_Dni,
     l.cod_localidad,
     Cliente_Nombre,
@@ -56,15 +77,16 @@ SELECT DISTINCT
     Cliente_Mail,
     Cliente_Direccion,
     Cliente_Telefono
-FROM gd_esquema.Maestra tm
+FROM ClientesUnicos tm
 JOIN Provincia p ON tm.Cliente_Provincia = p.nombre_prov
-JOIN Localidad l ON tm.Cliente_Localidad = l.nombre_localidad AND l.provincia = p.cod_prov;
-
-
+JOIN Localidad l ON tm.Cliente_Localidad = l.nombre_localidad AND l.provincia = p.cod_prov
+WHERE rn = 1;
 
 -- ========================================
 -- Inserts para tabla Proveedor
+PRINT 'Insertando datos en tabla Proveedor...';
 -- ========================================
+
 INSERT INTO Proveedor (cuit, razon_social, localidad, direccion, telefono, mail)
 SELECT DISTINCT
     Proveedor_Cuit,
@@ -74,19 +96,23 @@ SELECT DISTINCT
     Proveedor_Telefono,
     Proveedor_Mail
 FROM gd_esquema.Maestra tm
-JOIN Localidad l ON tm.Proveedor_Localidad = l.nombre_localidad;
+JOIN Provincia p ON tm.Proveedor_Provincia = p.nombre_prov
+JOIN Localidad l ON tm.Proveedor_Localidad = l.nombre_localidad AND l.provincia = p.cod_prov;
 
 -- ========================================
 -- Inserts para tabla Material
+PRINT 'Insertando datos en tabla Material...';
 -- ========================================
 INSERT INTO Material (nombre, precio)
 SELECT DISTINCT 
     Material_Nombre,
     Material_Precio
-FROM gd_esquema.Maestra;
+FROM gd_esquema.Maestra
+WHERE Material_nombre is not null;
 
 -- ========================================
 -- Inserts para tabla Tela (solo tipo 'Tela')
+PRINT 'Insertando datos en tabla Tela...';
 -- ========================================
 INSERT INTO Tela (id_material, color, textura)
 SELECT DISTINCT 
@@ -99,6 +125,7 @@ WHERE tm.Material_Tipo = 'Tela' AND tm.Tela_Color IS NOT NULL;
 
 -- ========================================
 -- Inserts para tabla Madera (solo tipo 'Madera')
+PRINT 'Insertando datos en tabla Madera...';
 -- ========================================
 INSERT INTO Madera (id_material, nombre, descripcion, color, dureza)
 SELECT DISTINCT 
@@ -113,6 +140,7 @@ WHERE tm.Material_Tipo = 'Madera' AND tm.Madera_Color IS NOT NULL;
 
 -- ========================================
 -- Inserts para tabla Relleno (solo tipo 'Relleno')
+PRINT 'Insertando datos en tabla Relleno...';
 -- ========================================
 INSERT INTO Relleno (id_material, nombre, descripcion, densidad)
 SELECT DISTINCT 
@@ -269,3 +297,9 @@ JOIN Material m ON tm.Material_Nombre = m.nombre;
 
 
 **/
+
+
+-- Normalización Provincia
+
+UPDATE Provincia SET nombre_prov = 'Santiago del Estero' WHERE nombre_prov = 'Santia; Del Estero';
+UPDATE Provincia SET nombre_prov = 'Tierra del Fuego' WHERE nombre_prov = 'Tierra Del Fue;';

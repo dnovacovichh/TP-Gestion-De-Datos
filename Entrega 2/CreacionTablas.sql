@@ -86,7 +86,7 @@ CREATE TABLE Sucursal (
 );
 
 CREATE TABLE Cliente (
-    nro_cliente BIGINT PRIMARY KEY,
+    nro_cliente BIGINT IDENTITY(1,1) PRIMARY KEY,
     dni BIGINT,
     localidad INT,
     nombre VARCHAR(255),
