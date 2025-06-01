@@ -3,14 +3,14 @@ GO
 
 
 -- Eliminar FK compuesta si existe
-IF OBJECT_ID('Detalle_Factura', 'U') IS NOT NULL
+IF OBJECT_ID('LOS_HELECHOS.Detalle_Factura', 'U') IS NOT NULL
 BEGIN
     IF EXISTS (
         SELECT * FROM sys.foreign_keys 
         WHERE name = 'fk_detallefactura_pedido'
     )
     BEGIN
-        ALTER TABLE Detalle_Factura 
+        ALTER TABLE LOS_HELECHOS.Detalle_Factura 
         DROP CONSTRAINT fk_detallefactura_pedido;
     END
 END
@@ -36,3 +36,11 @@ DROP TABLE IF EXISTS LOS_HELECHOS.Sillon_Medida;
 DROP TABLE IF EXISTS LOS_HELECHOS.Sillon_Modelo;
 DROP TABLE IF EXISTS LOS_HELECHOS.Material;
 DROP TABLE IF EXISTS LOS_HELECHOS.Provincia;
+
+-- Eliminar el schema LOS_HELECHOS si existe
+IF EXISTS (
+    SELECT * FROM sys.schemas WHERE name = 'LOS_HELECHOS'
+)
+BEGIN
+    DROP SCHEMA LOS_HELECHOS;
+END

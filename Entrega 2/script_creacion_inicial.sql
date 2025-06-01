@@ -102,7 +102,7 @@ CREATE TABLE [LOS_HELECHOS].[Cliente] (
 
 -- COMPRAS
 CREATE TABLE [LOS_HELECHOS].[Compra] (
-    nro_compra INT IDENTITY(1,1) PRIMARY KEY,
+    nro_compra INT PRIMARY KEY,
     suc_compra INT,
     fecha DATETIME,
     total DECIMAL(10,2),
@@ -191,7 +191,7 @@ CREATE TABLE [LOS_HELECHOS].[Detalle_Factura] (
 
 -- ENV�OS
 CREATE TABLE [LOS_HELECHOS].[Envio] (
-    nro_envio INT IDENTITY(1,1) PRIMARY KEY,
+    nro_envio INT PRIMARY KEY,
     nro_factura BIGINT,
     fecha_programada DATETIME,
     fecha_entrega DATETIME,
@@ -382,8 +382,6 @@ SET IDENTITY_INSERT LOS_HELECHOS.Sillon_Modelo OFF;
 -- Inserts para tabla Sillon_Medida
 PRINT 'Insertando datos en tabla Sillon_Medida...';
 -- ========================================
-SET IDENTITY_INSERT LOS_HELECHOS.Sillon_Medida ON;
-
 INSERT INTO LOS_HELECHOS.Sillon_Medida (alto, ancho, profundidad, precio_medida)
 SELECT DISTINCT
     Sillon_Medida_Alto,
@@ -392,8 +390,6 @@ SELECT DISTINCT
     Sillon_Medida_Precio
 FROM gd_esquema.Maestra
 WHERE Sillon_Medida_Alto IS NOT NULL;
-
-SET IDENTITY_INSERT LOS_HELECHOS.Sillon_Medida OFF;
 
 -- ========================================
 -- Inserts para tabla Sillon
@@ -491,6 +487,7 @@ SET IDENTITY_INSERT LOS_HELECHOS.Factura OFF;
 
 ---========================================
 -- Inserts para tabla Detalle_Factura
+PRINT 'Insertando datos en tabla Detalle_Factura...';
 -- ========================================
 
 INSERT INTO LOS_HELECHOS.Detalle_Factura (nro_factura, nro_pedido,id_sillon, cantidad, precio, subtotal)
@@ -506,6 +503,7 @@ WHERE Factura_Numero is not null and Pedido_Numero is not null and Sillon_Modelo
 
 -- ========================================
 -- Inserts para tabla Envio
+PRINT 'Insertando datos en tabla Envio...';
 -- ========================================
 
 INSERT INTO LOS_HELECHOS.Envio (nro_envio, nro_factura, fecha_programada, fecha_entrega, importe_traslado, importe_subida, total)
@@ -522,6 +520,7 @@ where envio_Numero is not null;
 
 -- ========================================
 -- Inserts para tabla Compra
+PRINT 'Insertando datos en tabla Compra...';
 -- ========================================
 
 INSERT INTO LOS_HELECHOS.Compra (nro_compra, suc_compra, fecha, total, cuit_proveedor)
@@ -543,6 +542,7 @@ JOIN LOS_HELECHOS.Sucursal s ON tm.Sucursal_NroSucursal = s.nro_sucursal
 
 -- ========================================
 -- Inserts para tabla Detalle_Compra
+PRINT 'Insertando datos en tabla Detalle_Compra...';
 -- ========================================
 INSERT INTO LOS_HELECHOS.Detalle_Compra (nro_compra, material_comprado, cantidad, precio, subtotal)
 SELECT DISTINCT 
@@ -555,9 +555,7 @@ FROM gd_esquema.Maestra tm
 JOIN LOS_HELECHOS.Material m ON tm.Material_Nombre = m.nombre
 where Compra_Numero is not null;
 
-
-
 -- Normalizaci�n Provincia
-
+PRINT 'Normalizando provincia...';
 UPDATE LOS_HELECHOS.Provincia SET nombre_prov = 'Santiago del Estero' WHERE nombre_prov = 'Santia; Del Estero';
 UPDATE LOS_HELECHOS.Provincia SET nombre_prov = 'Tierra del Fuego' WHERE nombre_prov = 'Tierra Del Fue;';
