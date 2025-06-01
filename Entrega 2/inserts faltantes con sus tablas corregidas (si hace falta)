@@ -1,0 +1,87 @@
+-- LIsto pero me parece raro el resultado aunque tenga sentido
+INSERT INTO Detalle_Factura (nro_factura, nro_pedido,id_sillon, cantidad, precio, subtotal)
+SELECT DISTINCT 
+    Factura_Numero,
+    Pedido_Numero,
+    Sillon_Modelo_Codigo,
+    Detalle_Factura_Cantidad,
+    Detalle_Factura_Precio,
+    Detalle_Factura_SubTotal
+FROM gd_esquema.Maestra
+WHERE Factura_Numero is not null and Pedido_Numero is not null and Sillon_Modelo_Codigo is not null;
+
+-- ========================================
+-- Inserts para tabla Envio -- listo hay que sacar el identity
+-- ========================================
+INSERT INTO Envio (nro_envio, nro_factura, fecha_programada, fecha_entrega, importe_traslado, importe_subida, total)
+SELECT DISTINCT 
+    Envio_Numero,
+    Factura_Numero,
+    Envio_Fecha_Programada,
+    Envio_Fecha,
+    Envio_ImporteTraslado,
+    Envio_ImporteSubida,
+    Envio_Total
+FROM gd_esquema.Maestra
+where envio_Numero is not null;
+
+-- ========================================
+-- Inserts para tabla Compra Listo hay que sacar el identity
+-- ========================================
+INSERT INTO Compra (nro_compra, suc_compra, fecha, total, cuit_proveedor)
+SELECT DISTINCT 
+    Compra_Numero,
+    s.nro_sucursal,
+    Compra_Fecha,
+    Compra_Total,
+    Proveedor_Cuit
+FROM gd_esquema.Maestra tm
+JOIN Sucursal s ON tm.Sucursal_NroSucursal = s.nro_sucursal
+ where Compra_Numero is not null 
+ group by Compra_Numero,
+    s.nro_sucursal,
+    Compra_Fecha,
+    Compra_Total,
+    Proveedor_Cuit 
+    order by Compra_Numero desc;
+
+-- ========================================
+-- Inserts para tabla Detalle_Compra
+-- ========================================
+
+-- listo
+INSERT INTO Detalle_Compra (nro_compra, material_comprado, cantidad, precio, subtotal)
+SELECT DISTINCT 
+    Compra_Numero,
+    m.id_material,
+    Detalle_Compra_Cantidad,
+    Detalle_Compra_Precio,
+    Detalle_Compra_SubTotal
+FROM gd_esquema.Maestra tm
+JOIN Material m ON tm.Material_Nombre = m.nombre
+where Compra_Numero is not null;
+-----------------------------------------------------------------------------------------------------------------------------------------------
+tablas corregidas
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE Envio (
+    nro_envio INT PRIMARY KEY,
+    nro_factura BIGINT,
+    fecha_programada DATETIME,
+    fecha_entrega DATETIME,
+    importe_traslado DECIMAL(10,2),
+    importe_subida DECIMAL(10,2),
+    total DECIMAL(10,2),
+    FOREIGN KEY (nro_factura) REFERENCES Factura(nro_factura)
+);
+
+CREATE TABLE Compra (
+    nro_compra INT PRIMARY KEY,
+    suc_compra INT,
+    fecha DATETIME,
+    total DECIMAL(10,2),
+    cuit_proveedor VARCHAR(20),
+    FOREIGN KEY (suc_compra) REFERENCES Sucursal(nro_sucursal),
+    FOREIGN KEY (cuit_proveedor) REFERENCES Proveedor(cuit)
+);
+
