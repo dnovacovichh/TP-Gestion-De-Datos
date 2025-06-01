@@ -375,7 +375,7 @@ SELECT DISTINCT
     Sillon_Modelo_Descripcion,
     Sillon_Modelo_Precio
 FROM gd_esquema.Maestra
-WHERE LOS_HELECHOS.Sillon_Modelo_Codigo is not null;
+WHERE Sillon_Modelo_Codigo is not null;
 
 SET IDENTITY_INSERT LOS_HELECHOS.Sillon_Modelo OFF;
 -- ========================================
@@ -391,7 +391,7 @@ SELECT DISTINCT
     Sillon_Medida_Profundidad,
     Sillon_Medida_Precio
 FROM gd_esquema.Maestra
-WHERE LOS_HELECHOS.Sillon_Medida_Alto IS NOT NULL;
+WHERE Sillon_Medida_Alto IS NOT NULL;
 
 SET IDENTITY_INSERT LOS_HELECHOS.Sillon_Medida OFF;
 
