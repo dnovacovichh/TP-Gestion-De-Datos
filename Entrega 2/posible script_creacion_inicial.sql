@@ -204,9 +204,6 @@ ADD CONSTRAINT fk_detallefactura_pedido
 FOREIGN KEY (nro_pedido, id_sillon)
 REFERENCES Detalle_Pedido(nro_pedido, id_sillon);
 
-USE GD1C2025;
-GO
-
 -- ========================================
 -- Inserts para tabla Provincia
 PRINT 'Insertando datos en tabla Provincia...';
