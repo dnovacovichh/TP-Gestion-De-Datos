@@ -42,6 +42,7 @@ WHERE loc IS NOT NULL;
 -- ========================================
 -- Inserts para tabla Sucursal
 PRINT 'Insertando datos en tabla Sucursal...';
+
 -- ========================================
 INSERT INTO Sucursal (localidad, nro_sucursal, direccion, telefono, mail)
 SELECT DISTINCT 
@@ -51,7 +52,8 @@ SELECT DISTINCT
     Sucursal_Telefono,
     Sucursal_Mail
 FROM gd_esquema.Maestra tm
-JOIN Localidad l ON tm.Sucursal_Localidad = l.nombre_localidad;
+JOIN Provincia p ON tm.sucursal_provincia = p.nombre_prov
+JOIN Localidad l ON tm.sucursal_localidad = l.nombre_localidad AND l.provincia = p.cod_prov
 
 -- ========================================
 -- Inserts para tabla Cliente
@@ -153,60 +155,85 @@ JOIN Material m ON tm.Material_Nombre = m.nombre
 WHERE tm.Material_Tipo = 'Relleno' AND tm.Relleno_Densidad IS NOT NULL;
 
 
-/**
+
 -- ========================================
 -- Inserts para tabla Sillon_Modelo
+PRINT 'Insertando datos en tabla Sillon_Modelo...';
 -- ========================================
+SET IDENTITY_INSERT Sillon_Modelo ON;
+
 INSERT INTO Sillon_Modelo (codigo_modelo, nombre, descripcion, precio_base)
 SELECT DISTINCT 
     Sillon_Modelo_Codigo,
     Sillon_Modelo,
     Sillon_Modelo_Descripcion,
     Sillon_Modelo_Precio
-FROM gd_esquema.Maestra;
+FROM gd_esquema.Maestra
+WHERE Sillon_Modelo_Codigo is not null;
 
+SET IDENTITY_INSERT Sillon_Modelo OFF;
 -- ========================================
 -- Inserts para tabla Sillon_Medida
+PRINT 'Insertando datos en tabla Sillon_Medida...';
 -- ========================================
-INSERT INTO Sillon_Medida (id_medida, alto, ancho, profundidad, precio_medida)
-SELECT DISTINCT 
-    ROW_NUMBER() OVER (ORDER BY Sillon_Medida_Alto) AS id_medida,
+SET IDENTITY_INSERT Sillon_Modelo ON;
+
+INSERT INTO Sillon_Medida (alto, ancho, profundidad, precio_medida)
+SELECT DISTINCT
     Sillon_Medida_Alto,
     Sillon_Medida_Ancho,
     Sillon_Medida_Profundidad,
     Sillon_Medida_Precio
-FROM gd_esquema.Maestra;
+FROM gd_esquema.Maestra
+WHERE Sillon_Medida_Alto IS NOT NULL;
+
+SET IDENTITY_INSERT Sillon_Modelo OFF;
 
 -- ========================================
 -- Inserts para tabla Sillon
+PRINT 'Insertando datos en tabla Sillon...';
 -- ========================================
-INSERT INTO Sillon (id_sillon, codigo_modelo, id_medida, id_material)
-SELECT DISTINCT 
-    Sillon_Codigo,
-    Sillon_Modelo_Codigo,
-    sm.id_medida,
+INSERT INTO Sillon (codigo_sillon, codigo_modelo, id_medida, id_material)
+SELECT 
+	ma.Sillon_Codigo,
+    sm.codigo_modelo,
+    med.id_medida,
     m.id_material
-FROM gd_esquema.Maestra tm
-JOIN Sillon_Medida sm ON tm.Sillon_Medida_Alto = sm.alto AND tm.Sillon_Medida_Ancho = sm.ancho AND tm.Sillon_Medida_Profundidad = sm.profundidad
-JOIN Material m ON tm.Material_Nombre = m.nombre;
+FROM gd_esquema.Maestra ma
+JOIN Sillon_Modelo sm 
+  ON ma.Sillon_Modelo = sm.nombre 
+ AND ma.Sillon_Modelo_Descripcion = sm.descripcion
+JOIN Sillon_Medida med 
+  ON ma.Sillon_Medida_Alto = med.alto 
+ AND ma.Sillon_Medida_Ancho = med.ancho 
+ AND ma.Sillon_Medida_Profundidad = med.profundidad
+JOIN Material m ON ma.Material_Nombre = m.nombre;
+
 
 -- ========================================
 -- Inserts para tabla Pedido
+PRINT 'Insertando datos en tabla Pedido...';
 -- ========================================
-INSERT INTO Pedido (nro_pedido, fecha, estado, total, nro_cliente, id_sucursal)
+SET IDENTITY_INSERT Pedido ON;
+
+INSERT INTO Pedido (nro_pedido, fecha, estado, total, nro_cliente, nro_sucursal)
 SELECT DISTINCT 
     Pedido_Numero,
     Pedido_Fecha,
     Pedido_Estado,
     Pedido_Total,
     c.nro_cliente,
-    s.id_sucursal
+    s.nro_sucursal
 FROM gd_esquema.Maestra tm
 JOIN Cliente c ON tm.Cliente_Dni = c.dni
-JOIN Sucursal s ON tm.Sucursal_NroSucursal = s.nro_sucursal;
+JOIN Sucursal s ON tm.Sucursal_NroSucursal = s.nro_sucursal
+WHERE Pedido_Numero is not null;
+
+SET IDENTITY_INSERT Pedido OFF;
 
 -- ========================================
 -- Inserts para tabla Detalle_Pedido
+PRINT 'Insertando datos en tabla Detalle_Pedido...';
 -- ========================================
 INSERT INTO Detalle_Pedido (nro_pedido, id_sillon, cantidad, precio, subtotal)
 SELECT DISTINCT 
@@ -216,11 +243,14 @@ SELECT DISTINCT
     Detalle_Pedido_Precio,
     Detalle_Pedido_SubTotal
 FROM gd_esquema.Maestra tm
-JOIN Sillon s ON tm.Sillon_Codigo = s.id_sillon;
+JOIN Sillon s ON tm.Sillon_Codigo = s.codigo_sillon;
 
 -- ========================================
 -- Inserts para tabla CancelacionPedido
+PRINT 'Insertando datos en tabla CancelacionPedido...';
 -- ========================================
+SET IDENTITY_INSERT CancelacionPedido ON;
+
 INSERT INTO CancelacionPedido (nro_pedido, fecha_cancelacion, motivo_cancelacion)
 SELECT DISTINCT 
     Pedido_Numero,
@@ -229,19 +259,29 @@ SELECT DISTINCT
 FROM gd_esquema.Maestra
 WHERE Pedido_Cancelacion_Fecha IS NOT NULL;
 
+
+SET IDENTITY_INSERT CancelacionPedido OFF;
 -- ========================================
 -- Inserts para tabla Factura
+PRINT 'Insertando datos en tabla Factura...';
 -- ========================================
-INSERT INTO Factura (nro_factura, id_sucursal, nro_cliente, fecha, total)
+SET IDENTITY_INSERT Factura ON;
+
+INSERT INTO Factura (nro_factura, nro_sucursal, nro_cliente, fecha, total)
 SELECT DISTINCT 
     Factura_Numero,
-    s.id_sucursal,
+    s.nro_sucursal,
     c.nro_cliente,
     Factura_Fecha,
     Factura_Total
 FROM gd_esquema.Maestra tm
 JOIN Cliente c ON tm.Cliente_Dni = c.dni
-JOIN Sucursal s ON tm.Sucursal_NroSucursal = s.nro_sucursal;
+JOIN Sucursal s ON tm.Sucursal_NroSucursal = s.nro_sucursal
+WHERE Factura_Numero is not null;
+
+SET IDENTITY_INSERT Factura OFF;
+
+/**
 
 -- ========================================
 -- Inserts para tabla Detalle_Factura
@@ -253,7 +293,8 @@ SELECT DISTINCT
     Detalle_Factura_Cantidad,
     Detalle_Factura_Precio,
     Detalle_Factura_SubTotal
-FROM gd_esquema.Maestra;
+FROM gd_esquema.Maestra
+WHERE Factura_Numero is not null;
 
 -- ========================================
 -- Inserts para tabla Envio
@@ -275,7 +316,7 @@ FROM gd_esquema.Maestra;
 INSERT INTO Compra (nro_compra, suc_compra, fecha, total, cuit_proveedor)
 SELECT DISTINCT 
     Compra_Numero,
-    s.id_sucursal,
+    s.nro_sucursal,
     Compra_Fecha,
     Compra_Total,
     Proveedor_Cuit

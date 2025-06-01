@@ -76,9 +76,8 @@ CREATE TABLE Proveedor (
 );
 
 CREATE TABLE Sucursal (
-    id_sucursal INT IDENTITY(1,1) PRIMARY KEY,
+    nro_sucursal INT PRIMARY KEY, -- clave natural
     localidad INT,
-    nro_sucursal BIGINT,
     direccion VARCHAR(255),
     telefono VARCHAR(255),
     mail VARCHAR(255),
@@ -105,7 +104,7 @@ CREATE TABLE Compra (
     fecha DATETIME,
     total DECIMAL(10,2),
     cuit_proveedor VARCHAR(20),
-    FOREIGN KEY (suc_compra) REFERENCES Sucursal(id_sucursal),
+    FOREIGN KEY (suc_compra) REFERENCES Sucursal(nro_sucursal),
     FOREIGN KEY (cuit_proveedor) REFERENCES Proveedor(cuit)
 );
 
@@ -123,6 +122,7 @@ CREATE TABLE Detalle_Compra (
 -- SILLONES
 CREATE TABLE Sillon (
     id_sillon INT IDENTITY(1,1) PRIMARY KEY,
+	codigo_sillon BIGINT,
     codigo_modelo BIGINT,
     id_medida BIGINT,
     id_material INT,
@@ -138,9 +138,9 @@ CREATE TABLE Pedido (
     estado VARCHAR(50),
     total DECIMAL(10,2),
     nro_cliente BIGINT,
-    id_sucursal INT,
+    nro_sucursal INT,
     FOREIGN KEY (nro_cliente) REFERENCES Cliente(nro_cliente),
-    FOREIGN KEY (id_sucursal) REFERENCES Sucursal(id_sucursal)
+    FOREIGN KEY (nro_sucursal) REFERENCES Sucursal(nro_sucursal)
 );
 
 CREATE TABLE Detalle_Pedido (
@@ -164,13 +164,15 @@ CREATE TABLE CancelacionPedido (
 -- FACTURACIÓN
 CREATE TABLE Factura (
     nro_factura BIGINT IDENTITY(1,1) PRIMARY KEY,
-    id_sucursal INT,
+    nro_sucursal INT,
     nro_cliente BIGINT,
     fecha DATETIME,
     total DECIMAL(10,2),
-    FOREIGN KEY (id_sucursal) REFERENCES Sucursal(id_sucursal),
+    FOREIGN KEY (nro_sucursal) REFERENCES Sucursal(nro_sucursal),
     FOREIGN KEY (nro_cliente) REFERENCES Cliente(nro_cliente)
 );
+
+
 
 CREATE TABLE Detalle_Factura (
     nro_factura BIGINT,
@@ -181,7 +183,7 @@ CREATE TABLE Detalle_Factura (
     subtotal DECIMAL(10,2),
     PRIMARY KEY (nro_factura, nro_pedido, id_sillon),
     FOREIGN KEY (nro_factura) REFERENCES Factura(nro_factura)
-    -- Nota: la FK compuesta a Detalle_Pedido se declara manualmente fuera
+    -- FK compuesta a Detalle_Pedido se declara aparte
 );
 
 -- ENVÍOS
