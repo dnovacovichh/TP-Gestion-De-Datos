@@ -496,7 +496,7 @@ PRINT 'Insertando datos en tabla Detalle_Pedido...';
 INSERT INTO LOS_HELECHOS.Detalle_Pedido (nro_pedido, id_sillon, cantidad, precio, subtotal)
 SELECT DISTINCT 
     Pedido_Numero,
-    s.id_sillon,
+    s.codigo_sillon,
     Detalle_Pedido_Cantidad,
     Detalle_Pedido_Precio,
     Detalle_Pedido_SubTotal
@@ -546,6 +546,7 @@ SET IDENTITY_INSERT LOS_HELECHOS.Factura OFF;
 PRINT 'Insertando datos en tabla Detalle_Factura...';
 -- ========================================
 
+/** 
 INSERT INTO LOS_HELECHOS.Detalle_Factura (nro_factura, nro_pedido,id_sillon, cantidad, precio, subtotal)
 SELECT DISTINCT 
     Factura_Numero,
@@ -615,3 +616,5 @@ where Compra_Numero is not null;
 PRINT 'Normalizando provincia...';
 UPDATE LOS_HELECHOS.Provincia SET nombre_prov = 'Santiago del Estero' WHERE nombre_prov = 'Santia; Del Estero';
 UPDATE LOS_HELECHOS.Provincia SET nombre_prov = 'Tierra del Fuego' WHERE nombre_prov = 'Tierra Del Fue;';
+
+**/
