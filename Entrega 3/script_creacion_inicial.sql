@@ -56,7 +56,7 @@ CREATE TABLE [LOS_HELECHOS].[Relleno] (
     id_material INT,
     nombre VARCHAR(255),
     descripcion VARCHAR(255),
-    densidad DECIMAL,
+    densidad DECIMAL(38,2),
     FOREIGN KEY (id_material) REFERENCES [LOS_HELECHOS].[Material](id_material)
 );
 
@@ -124,14 +124,17 @@ CREATE TABLE [LOS_HELECHOS].[Detalle_Compra] (
 
 -- SILLONES
 CREATE TABLE [LOS_HELECHOS].[Sillon] (
-    id_sillon INT IDENTITY(1,1) PRIMARY KEY,
-	codigo_sillon BIGINT,
-    codigo_modelo BIGINT,
-    id_medida BIGINT,
-    id_material INT,
+    codigo_sillon BIGINT UNIQUE,
+    codigo_modelo BIGINT NOT NULL,
+    id_medida BIGINT NOT NULL,
+    id_tela INT NOT NULL,
+    id_madera INT NOT NULL,
+    id_relleno INT NOT NULL,
     FOREIGN KEY (codigo_modelo) REFERENCES [LOS_HELECHOS].[Sillon_Modelo](codigo_modelo),
     FOREIGN KEY (id_medida) REFERENCES [LOS_HELECHOS].[Sillon_Medida](id_medida),
-    FOREIGN KEY (id_material) REFERENCES [LOS_HELECHOS].[Material](id_material)
+    FOREIGN KEY (id_tela) REFERENCES [LOS_HELECHOS].[Tela](id_tela),
+    FOREIGN KEY (id_madera) REFERENCES [LOS_HELECHOS].[Madera](id_madera),
+    FOREIGN KEY (id_relleno) REFERENCES [LOS_HELECHOS].[Relleno](id_relleno)
 );
 
 -- PEDIDOS
@@ -148,13 +151,13 @@ CREATE TABLE [LOS_HELECHOS].[Pedido] (
 
 CREATE TABLE [LOS_HELECHOS].[Detalle_Pedido] (
     nro_pedido INT,
-    id_sillon INT,
+    id_sillon BIGINT,
     cantidad BIGINT,
     precio DECIMAL(10,2),
     subtotal DECIMAL(10,2),
     PRIMARY KEY (nro_pedido, id_sillon),
     FOREIGN KEY (nro_pedido) REFERENCES [LOS_HELECHOS].[Pedido](nro_pedido),
-    FOREIGN KEY (id_sillon) REFERENCES [LOS_HELECHOS].[Sillon](id_sillon)
+    FOREIGN KEY (id_sillon) REFERENCES [LOS_HELECHOS].[Sillon](codigo_sillon)
 );
 
 CREATE TABLE [LOS_HELECHOS].[CancelacionPedido] (
@@ -180,7 +183,7 @@ CREATE TABLE [LOS_HELECHOS].[Factura] (
 CREATE TABLE [LOS_HELECHOS].[Detalle_Factura] (
     nro_factura BIGINT,
     nro_pedido INT,
-    id_sillon INT,
+    id_sillon BIGINT,
     cantidad DECIMAL,
     precio DECIMAL(10,2),
     subtotal DECIMAL(10,2),
@@ -395,22 +398,75 @@ WHERE Sillon_Medida_Alto IS NOT NULL;
 -- Inserts para tabla Sillon
 PRINT 'Insertando datos en tabla Sillon...';
 -- ========================================
-INSERT INTO LOS_HELECHOS.Sillon (codigo_sillon, codigo_modelo, id_medida, id_material)
-SELECT 
-	ma.Sillon_Codigo,
+WITH base_sillon AS (
+    SELECT DISTINCT
+        ma.Sillon_Codigo,
+        ma.Sillon_Modelo,
+        ma.Sillon_Modelo_Descripcion,
+        ma.Sillon_Medida_Alto,
+        ma.Sillon_Medida_Ancho,
+        ma.Sillon_Medida_Profundidad
+    FROM gd_esquema.Maestra ma
+    WHERE ma.Material_Tipo = 'Tela'
+),
+madera_sillon AS (
+    SELECT Sillon_Codigo, Material_Descripcion
+    FROM (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY Sillon_Codigo ORDER BY Material_Descripcion) AS rn
+        FROM gd_esquema.Maestra
+        WHERE Material_Tipo = 'Madera'
+    ) m
+    WHERE rn = 1
+),
+relleno_sillon AS (
+    SELECT Sillon_Codigo, Material_Descripcion
+    FROM (
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY Sillon_Codigo ORDER BY Material_Descripcion) AS rn
+        FROM gd_esquema.Maestra
+        WHERE Material_Tipo = 'Relleno'
+    ) r
+    WHERE rn = 1
+)
+
+INSERT INTO LOS_HELECHOS.Sillon (
+    codigo_sillon,
+    codigo_modelo,
+    id_medida,
+    id_tela,
+    id_madera,
+    id_relleno
+)
+SELECT
+    b.Sillon_Codigo,
     sm.codigo_modelo,
     med.id_medida,
-    m.id_material
-FROM gd_esquema.Maestra ma
+    t.id_tela,
+    m.id_madera,
+    r.id_relleno
+FROM base_sillon b
 JOIN LOS_HELECHOS.Sillon_Modelo sm 
-  ON ma.Sillon_Modelo = sm.nombre 
- AND ma.Sillon_Modelo_Descripcion = sm.descripcion
+  ON sm.nombre = b.Sillon_Modelo AND sm.descripcion = b.Sillon_Modelo_Descripcion
 JOIN LOS_HELECHOS.Sillon_Medida med 
-  ON ma.Sillon_Medida_Alto = med.alto 
- AND ma.Sillon_Medida_Ancho = med.ancho 
- AND ma.Sillon_Medida_Profundidad = med.profundidad
-JOIN LOS_HELECHOS.Material m ON ma.Material_Nombre = m.nombre;
+  ON med.alto = b.Sillon_Medida_Alto AND med.ancho = b.Sillon_Medida_Ancho AND med.profundidad = b.Sillon_Medida_Profundidad
 
+-- Tela: por color + textura
+LEFT JOIN (
+    SELECT DISTINCT Sillon_Codigo, Tela_Color, Tela_Textura
+    FROM gd_esquema.Maestra
+    WHERE Material_Tipo = 'Tela'
+) ts ON ts.Sillon_Codigo = b.Sillon_Codigo
+LEFT JOIN LOS_HELECHOS.Tela t 
+  ON t.color = ts.Tela_Color AND t.textura = ts.Tela_Textura
+
+-- Madera: por descripción
+LEFT JOIN madera_sillon ms ON ms.Sillon_Codigo = b.Sillon_Codigo
+LEFT JOIN LOS_HELECHOS.Madera m ON m.descripcion = ms.Material_Descripcion
+
+-- Relleno: por descripción
+LEFT JOIN relleno_sillon rs ON rs.Sillon_Codigo = b.Sillon_Codigo
+LEFT JOIN LOS_HELECHOS.Relleno r ON r.descripcion = rs.Material_Descripcion
+
+ORDER BY b.Sillon_Codigo;
 
 -- ========================================
 -- Inserts para tabla Pedido
