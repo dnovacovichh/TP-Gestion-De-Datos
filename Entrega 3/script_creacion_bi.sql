@@ -53,7 +53,7 @@ CREATE TABLE LOS_HELECHOS.BI_Dim_EstadoPedido (
 
 -- TABLA DE HECHOS: BI_Hecho_Venta
 CREATE TABLE LOS_HELECHOS.BI_Hecho_Venta (
-    id_venta INT IDENTITY(1,1) PRIMARY KEY,
+    id_venta bigint PRIMARY KEY,
     id_tiempo INT,
     id_sucursal INT,
     id_cliente BIGINT,
@@ -64,11 +64,16 @@ CREATE TABLE LOS_HELECHOS.BI_Hecho_Venta (
     total_venta DECIMAL(10,2),
 
     FOREIGN KEY (id_tiempo) REFERENCES LOS_HELECHOS.BI_Dim_Tiempo(id_tiempo),
-    FOREIGN KEY (id_sucursal) REFERENCES LOS_HELECHOS.BI_Dim_Sucursal(id_sucursal),
-    FOREIGN KEY (id_cliente) REFERENCES LOS_HELECHOS.BI_Dim_Cliente(id_cliente),
-    FOREIGN KEY (id_sillon) REFERENCES LOS_HELECHOS.BI_Dim_Sillon(id_sillon),
-    FOREIGN KEY (estado_pedido) REFERENCES LOS_HELECHOS.BI_Dim_EstadoPedido(estado),
-    FOREIGN KEY (id_turno) REFERENCES LOS_HELECHOS.BI_Dim_Turno(id_turno)
+    -- FOREIGN KEY (id_sucursal) REFERENCES LOS_HELECHOS.BI_Dim_Sucursal(id_sucursal),
+    -- FOREIGN KEY (id_cliente) REFERENCES LOS_HELECHOS.BI_Dim_Cliente(id_cliente),
+    -- FOREIGN KEY (id_sillon) REFERENCES LOS_HELECHOS.BI_Dim_Sillon(id_sillon),
+    -- FOREIGN KEY (estado_pedido) REFERENCES LOS_HELECHOS.BI_Dim_EstadoPedido(estado),
+    -- FOREIGN KEY (id_turno) REFERENCES LOS_HELECHOS.BI_Dim_Turno(id_turno)
+
 );
+
+---
+
+-- INSERT INTO LOS_HELECHOS.BI_
 
 
