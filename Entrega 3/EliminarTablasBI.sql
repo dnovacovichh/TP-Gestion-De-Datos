@@ -1,26 +1,15 @@
 USE GD1C2025;
 GO
 
-IF OBJECT_ID('LOS_HELECHOS.BI_Dim_MaterialesSillon', 'U') IS NOT NULL
-BEGIN
-    DECLARE @fk NVARCHAR(128);
-    SELECT @fk = fk.name
-    FROM sys.foreign_keys fk
-    WHERE fk.parent_object_id = OBJECT_ID('LOS_HELECHOS.BI_Dim_MaterialesSillon')
-      AND fk.referenced_object_id = OBJECT_ID('LOS_HELECHOS.BI_Dim_Sillon');
-    
-    IF @fk IS NOT NULL
-    BEGIN
-        EXEC('ALTER TABLE LOS_HELECHOS.BI_Dim_MaterialesSillon DROP CONSTRAINT ' + @fk);
-    END
-END
-
-
+-- Eliminar tablas de hechos (en orden para evitar conflictos por FK)
+DROP TABLE IF EXISTS LOS_HELECHOS.BI_Hecho_Envio;
+DROP TABLE IF EXISTS LOS_HELECHOS.BI_Hecho_Pedido;
+DROP TABLE IF EXISTS LOS_HELECHOS.BI_Hecho_Compra;
 DROP TABLE IF EXISTS LOS_HELECHOS.BI_Hecho_Venta;
-DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_MaterialesSillon;
+
+-- Eliminar dimensiones
+DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_Turno;
 DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_Sillon;
 DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_Cliente;
 DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_Sucursal;
 DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_Tiempo;
-DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_Turno;
-DROP TABLE IF EXISTS LOS_HELECHOS.BI_Dim_EstadoPedido;
