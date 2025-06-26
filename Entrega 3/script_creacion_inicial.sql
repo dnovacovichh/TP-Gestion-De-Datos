@@ -546,17 +546,20 @@ SET IDENTITY_INSERT LOS_HELECHOS.Factura OFF;
 PRINT 'Insertando datos en tabla Detalle_Factura...';
 -- ========================================
 
+INSERT INTO LOS_HELECHOS.Detalle_Factura (
+    nro_factura, nro_pedido, id_sillon, cantidad, precio, subtotal
+)
+SELECT 
+    f.nro_factura,
+    dp.nro_pedido,
+    dp.id_sillon,
+    dp.cantidad,
+    dp.precio,
+    dp.subtotal
+FROM LOS_HELECHOS.Factura f
+JOIN LOS_HELECHOS.Pedido p ON p.nro_cliente = f.nro_cliente -- o cualquier relación válida entre Pedido y Factura
+JOIN LOS_HELECHOS.Detalle_Pedido dp ON dp.nro_pedido = p.nro_pedido;
 
-INSERT INTO LOS_HELECHOS.Detalle_Factura (nro_factura, nro_pedido,id_sillon, cantidad, precio, subtotal)
-SELECT DISTINCT 
-    Factura_Numero,
-    Pedido_Numero,
-    Sillon_Modelo_Codigo,
-    Detalle_Factura_Cantidad,
-    Detalle_Factura_Precio,
-    Detalle_Factura_SubTotal
-FROM gd_esquema.Maestra
-WHERE Factura_Numero is not null and Pedido_Numero is not null and Sillon_Modelo_Codigo is not null;
 
 -- ========================================
 -- Inserts para tabla Envio
@@ -589,13 +592,7 @@ SELECT DISTINCT
     Proveedor_Cuit
 FROM gd_esquema.Maestra tm
 JOIN LOS_HELECHOS.Sucursal s ON tm.Sucursal_NroSucursal = s.nro_sucursal
- where Compra_Numero is not null 
- group by Compra_Numero,
-    s.nro_sucursal,
-    Compra_Fecha,
-    Compra_Total,
-    Proveedor_Cuit 
-    order by Compra_Numero desc;
+ where Compra_Numero is not null;
 
 -- ========================================
 -- Inserts para tabla Detalle_Compra
