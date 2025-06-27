@@ -297,7 +297,7 @@ JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON t.anio = YEAR(f.fecha) AND t.mes = MONTH(f.
 
 --
 
-
+GO
 -- VIEWS
 
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Ganancias_Mensuales AS
@@ -337,7 +337,7 @@ LEFT JOIN Compras c
   ON v.anio = c.anio AND v.mes = c.mes AND v.id_sucursal = c.id_sucursal;
 
 
-
+GO
 --
 
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Factura_Promedio_Mensual AS
@@ -356,7 +356,9 @@ JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
 GROUP BY t.anio, t.cuatrimestre, s.provincia;
 
+GO
 --
+
 
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Top_Modelos_Cuatrimestral AS
 SELECT *
@@ -381,6 +383,7 @@ FROM (
 ) AS sub
 WHERE ranking <= 3;
 
+GO
 
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Volumen_Pedidos AS
 SELECT 
@@ -394,3 +397,27 @@ JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON p.id_tiempo = t.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
 JOIN LOS_HELECHOS.BI_Dim_Turno tr ON p.id_turno = tr.id_turno
 GROUP BY t.anio, t.mes, s.id_sucursal, tr.descripcion;
+
+GO
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Conversion_Pedidos AS
+SELECT 
+    t.anio,
+    t.cuatrimestre,
+    s.id_sucursal,
+    p.estado_pedido,
+    COUNT(*) AS cantidad_pedidos,
+    CAST(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (
+        PARTITION BY t.anio, t.cuatrimestre, s.id_sucursal
+    ) AS DECIMAL(5,2)) AS porcentaje
+FROM LOS_HELECHOS.BI_Hecho_Pedido p
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON p.id_tiempo = t.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
+GROUP BY 
+    t.anio,
+    t.cuatrimestre,
+    s.id_sucursal,
+    p.estado_pedido;
+--
+
+GO
