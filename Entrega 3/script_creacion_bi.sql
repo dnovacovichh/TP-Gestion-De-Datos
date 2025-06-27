@@ -495,6 +495,5 @@ JOIN LOS_HELECHOS.BI_Dim_Cliente c ON e.id_cliente = c.id_cliente
 GROUP BY c.localidad
 ORDER BY SUM(e.total_envio) DESC;
 
-select * from LOS_HELECHOS.BI_Vista_Localidades_Costo_Envio
 
 GO
