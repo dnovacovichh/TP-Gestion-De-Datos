@@ -419,6 +419,25 @@ GROUP BY
     s.id_sucursal,
     p.estado_pedido;
 
+CREATE or alter VIEW LOS_HELECHOS.BI_Vista_Tiempo_Fabricacion AS
+SELECT
+    tp.anio,
+    tp.cuatrimestre,
+    s.id_sucursal,
+    AVG(DATEDIFF(
+        DAY,
+        CAST(CONCAT(tp.anio, RIGHT('00' + CAST(tp.mes AS VARCHAR), 2), '01') AS DATE),
+        CAST(CONCAT(tv.anio, RIGHT('00' + CAST(tv.mes AS VARCHAR), 2), '01') AS DATE)
+    )) AS tiempo_promedio_dias
+FROM LOS_HELECHOS.BI_Hecho_Pedido p
+JOIN LOS_HELECHOS.BI_Dim_Tiempo tp ON p.id_tiempo = tp.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
+JOIN LOS_HELECHOS.BI_Hecho_Venta v
+  ON v.id_cliente = p.id_cliente
+  AND v.id_sucursal = p.id_sucursal
+JOIN LOS_HELECHOS.BI_Dim_Tiempo tv ON v.id_tiempo = tv.id_tiempo
+GROUP BY tp.anio, tp.cuatrimestre, s.id_sucursal;
+
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Promedio_Compras AS
 SELECT
     t.anio,
