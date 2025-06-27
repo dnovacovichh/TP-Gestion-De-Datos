@@ -34,7 +34,6 @@ Table BI_Dim_Turno {
   descripcion varchar
 }
 
-
 // HECHOS
 
 Table BI_Hecho_Venta {
@@ -68,6 +67,7 @@ Table BI_Hecho_Pedido {
   estado_pedido varchar
   cantidad_items int
   total_pedido decimal
+  id_turno int [ref: > BI_Dim_Turno.id_turno]
 }
 
 Table BI_Hecho_Envio {
@@ -81,4 +81,3 @@ Table BI_Hecho_Envio {
   importe_subida decimal
   total_envio decimal
 }
-
