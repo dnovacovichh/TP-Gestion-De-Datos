@@ -418,6 +418,7 @@ GROUP BY
     t.cuatrimestre,
     s.id_sucursal,
     p.estado_pedido;
+GO
 
 CREATE or alter VIEW LOS_HELECHOS.BI_Vista_Tiempo_Fabricacion AS
 SELECT
@@ -437,6 +438,7 @@ JOIN LOS_HELECHOS.BI_Hecho_Venta v
   AND v.id_sucursal = p.id_sucursal
 JOIN LOS_HELECHOS.BI_Dim_Tiempo tv ON v.id_tiempo = tv.id_tiempo
 GROUP BY tp.anio, tp.cuatrimestre, s.id_sucursal;
+GO
 
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Promedio_Compras AS
 SELECT
@@ -448,8 +450,9 @@ FROM LOS_HELECHOS.BI_Hecho_Compra c
 JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON c.id_tiempo = t.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON c.id_sucursal = s.id_sucursal
 GROUP BY t.anio, t.mes, s.id_sucursal;
+GO
 
-select * from LOS_HELECHOS.BI_Vista_Promedio_Compras
+
 
 
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Compras_Tipo_Material AS
@@ -463,8 +466,8 @@ FROM LOS_HELECHOS.BI_Hecho_Compra c
 JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON c.id_tiempo = t.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON c.id_sucursal = s.id_sucursal
 GROUP BY t.anio, t.cuatrimestre, s.id_sucursal, c.tipo_material;
+GO
 
-select * from LOS_HELECHOS.BI_Vista_Compras_Tipo_Material 
 
 
 
@@ -479,8 +482,8 @@ JOIN LOS_HELECHOS.BI_Dim_Tiempo tp ON e.id_tiempo_programada = tp.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Tiempo te ON e.id_tiempo_entrega = te.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON e.id_sucursal = s.id_sucursal
 GROUP BY tp.anio, tp.cuatrimestre, s.id_sucursal;
+GO
 
-select * from LOS_HELECHOS.BI_Vista_Cumplimiento_Envios
 
 
 CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Localidades_Costo_Envio AS
