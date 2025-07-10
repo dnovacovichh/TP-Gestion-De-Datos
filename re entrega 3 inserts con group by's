@@ -1,3 +1,71 @@
+CREATE TABLE LOS_HELECHOS.BI_Hecho_Venta (
+    id_venta INT IDENTITY(1,1) PRIMARY KEY,
+    id_tiempo INT,
+    id_sucursal INT,
+    id_cliente BIGINT,
+    id_sillon BIGINT,
+    id_turno INT,
+    cantidad BIGINT,
+    total_venta DECIMAL(10,2),
+
+    FOREIGN KEY (id_tiempo) REFERENCES LOS_HELECHOS.BI_Dim_Tiempo(id_tiempo),
+    FOREIGN KEY (id_sucursal) REFERENCES LOS_HELECHOS.BI_Dim_Sucursal(id_sucursal),
+    FOREIGN KEY (id_cliente) REFERENCES LOS_HELECHOS.BI_Dim_Cliente(id_cliente),
+    FOREIGN KEY (id_sillon) REFERENCES LOS_HELECHOS.BI_Dim_Sillon(id_sillon),
+    FOREIGN KEY (id_turno) REFERENCES LOS_HELECHOS.BI_Dim_Turno(id_turno)
+);
+
+CREATE TABLE LOS_HELECHOS.BI_Hecho_Compra (
+    id_compra INT IDENTITY(1,1) PRIMARY KEY,
+    id_tiempo INT,
+    id_sucursal INT,
+    id_proveedor VARCHAR(20),
+    id_material INT,
+    tipo_material VARCHAR(50),
+    cantidad DECIMAL(18,2),
+    precio_unitario DECIMAL(10,2),
+    subtotal DECIMAL(10,2),
+
+    FOREIGN KEY (id_tiempo) REFERENCES LOS_HELECHOS.BI_Dim_Tiempo(id_tiempo)
+);
+
+CREATE TABLE LOS_HELECHOS.BI_Hecho_Pedido (
+    id_pedido INT IDENTITY(1,1) PRIMARY KEY,
+    id_tiempo INT,
+    id_sucursal INT,
+    id_cliente BIGINT,
+    estado_pedido VARCHAR(50),
+    cantidad_items INT,
+    total_pedido DECIMAL(10,2),
+    id_turno INT,
+
+    FOREIGN KEY (id_tiempo) REFERENCES LOS_HELECHOS.BI_Dim_Tiempo(id_tiempo),
+    FOREIGN KEY (id_sucursal) REFERENCES LOS_HELECHOS.BI_Dim_Sucursal(id_sucursal),
+    FOREIGN KEY (id_cliente) REFERENCES LOS_HELECHOS.BI_Dim_Cliente(id_cliente),
+    FOREIGN KEY (id_turno) REFERENCES LOS_HELECHOS.BI_Dim_Turno(id_turno)
+);
+
+CREATE TABLE LOS_HELECHOS.BI_Hecho_Envio (
+    id_envio INT IDENTITY(1,1) PRIMARY KEY,
+    id_tiempo_programada INT,
+    id_tiempo_entrega INT,
+    id_sucursal INT,
+    id_cliente BIGINT,
+    id_factura BIGINT,
+    importe_traslado DECIMAL(10,2),
+    importe_subida DECIMAL(10,2),
+    total_envio DECIMAL(10,2),
+
+    FOREIGN KEY (id_tiempo_programada) REFERENCES LOS_HELECHOS.BI_Dim_Tiempo(id_tiempo),
+    FOREIGN KEY (id_tiempo_entrega) REFERENCES LOS_HELECHOS.BI_Dim_Tiempo(id_tiempo),
+    FOREIGN KEY (id_sucursal) REFERENCES LOS_HELECHOS.BI_Dim_Sucursal(id_sucursal),
+    FOREIGN KEY (id_cliente) REFERENCES LOS_HELECHOS.BI_Dim_Cliente(id_cliente)
+);
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
 INSERT INTO LOS_HELECHOS.BI_Hecho_Compra (id_tiempo, id_sucursal, id_proveedor, id_material, tipo_material, cantidad, precio_unitario, subtotal)
 SELECT 
     t.id_tiempo,
@@ -83,11 +151,10 @@ order by t.id_tiempo,
 
 
 INSERT INTO LOS_HELECHOS.BI_Hecho_Pedido (
-    id_pedido, id_tiempo, id_sucursal, id_cliente, estado_pedido,
+    id_tiempo, id_sucursal, id_cliente, estado_pedido,
     cantidad_items, total_pedido, id_turno
 )
 SELECT
-    p.nro_pedido,
     t.id_tiempo,
     p.nro_sucursal,
     p.nro_cliente,
@@ -114,11 +181,10 @@ order by p.nro_pedido, t.id_tiempo, p.nro_sucursal, p.nro_cliente,
 
 
 INSERT INTO LOS_HELECHOS.BI_Hecho_Envio (
-    id_envio, id_tiempo_programada, id_tiempo_entrega, id_sucursal, id_cliente, id_factura,
+  id_tiempo_programada, id_tiempo_entrega, id_sucursal, id_cliente, id_factura,
     importe_traslado, importe_subida, total_envio
 )
 SELECT
-    e.nro_envio,
     tp.id_tiempo,
     te.id_tiempo,
     f.nro_sucursal,
