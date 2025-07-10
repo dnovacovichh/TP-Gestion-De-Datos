@@ -111,3 +111,25 @@ order by p.nro_pedido, t.id_tiempo, p.nro_sucursal, p.nro_cliente,
     p.estado, p.total, p.fecha
 
 
+
+
+INSERT INTO LOS_HELECHOS.BI_Hecho_Envio (
+    id_envio, id_tiempo_programada, id_tiempo_entrega, id_sucursal, id_cliente, id_factura,
+    importe_traslado, importe_subida, total_envio
+)
+SELECT
+    e.nro_envio,
+    tp.id_tiempo,
+    te.id_tiempo,
+    f.nro_sucursal,
+    f.nro_cliente,
+    e.nro_factura,
+    e.importe_traslado,
+    e.importe_subida,
+    e.total
+FROM LOS_HELECHOS.Envio e
+JOIN LOS_HELECHOS.Factura f ON e.nro_factura = f.nro_factura
+JOIN LOS_HELECHOS.BI_Dim_Tiempo tp ON tp.anio = YEAR(e.fecha_programada) AND tp.mes = MONTH(e.fecha_programada)
+JOIN LOS_HELECHOS.BI_Dim_Tiempo te ON te.anio = YEAR(e.fecha_entrega) AND te.mes = MONTH(e.fecha_entrega)
+group by  e.nro_envio,tp.id_tiempo, te.id_tiempo,f.nro_sucursal,f.nro_cliente,e.nro_factura,e.importe_traslado, e.importe_subida,e.total
+order by e.nro_envio,tp.id_tiempo, te.id_tiempo,f.nro_sucursal,f.nro_cliente,e.nro_factura,e.importe_traslado, e.importe_subida,e.total
