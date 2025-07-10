@@ -82,3 +82,32 @@ order by t.id_tiempo,
     df.subtotal
 
 
+INSERT INTO LOS_HELECHOS.BI_Hecho_Pedido (
+    id_pedido, id_tiempo, id_sucursal, id_cliente, estado_pedido,
+    cantidad_items, total_pedido, id_turno
+)
+SELECT
+    p.nro_pedido,
+    t.id_tiempo,
+    p.nro_sucursal,
+    p.nro_cliente,
+    p.estado,
+    ISNULL(SUM(dp.cantidad), 0),
+    p.total,
+    CASE 
+        WHEN DATEPART(HOUR, p.fecha) BETWEEN 8 AND 13 THEN 1
+        WHEN DATEPART(HOUR, p.fecha) BETWEEN 14 AND 19 THEN 2
+        ELSE 3
+    END AS id_turno
+FROM LOS_HELECHOS.Pedido p
+LEFT JOIN LOS_HELECHOS.Detalle_Pedido dp ON p.nro_pedido = dp.nro_pedido
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t 
+    ON t.anio = YEAR(p.fecha) AND t.mes = MONTH(p.fecha)
+GROUP BY 
+    p.nro_pedido, t.id_tiempo, p.nro_sucursal, p.nro_cliente, 
+    p.estado, p.total, p.fecha
+
+order by p.nro_pedido, t.id_tiempo, p.nro_sucursal, p.nro_cliente, 
+    p.estado, p.total, p.fecha
+
+
