@@ -36,3 +36,49 @@ order by t.id_tiempo,  c.suc_compra,c.cuit_proveedor,dc.material_comprado,dc.can
                                                                                                                     WHEN ex.t = 'Relleno' THEN 'Relleno'
                                                                                                                     ELSE 'Otro'
                                                                                                                 END
+
+
+
+INSERT INTO LOS_HELECHOS.BI_Hecho_Venta (
+    id_tiempo, id_sucursal, id_cliente, id_sillon, id_turno,
+    cantidad, total_venta
+)
+SELECT
+    t.id_tiempo,
+    f.nro_sucursal,
+    f.nro_cliente,
+    s.codigo_sillon,
+    -- Turno según hora de la factura
+    CASE 
+        WHEN DATEPART(HOUR, f.fecha) BETWEEN 8 AND 13 THEN 1
+        WHEN DATEPART(HOUR, f.fecha) BETWEEN 14 AND 19 THEN 2
+        ELSE 3
+    END AS id_turno,
+    df.cantidad,
+    df.subtotal
+FROM LOS_HELECHOS.Factura f
+JOIN LOS_HELECHOS.Detalle_Factura df ON f.nro_factura = df.nro_factura
+JOIN LOS_HELECHOS.Sillon s ON df.id_sillon = s.codigo_sillon
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON t.anio = YEAR(f.fecha) AND t.mes = MONTH(f.fecha)
+
+group by t.id_tiempo,
+    f.nro_sucursal,
+    f.nro_cliente,
+    s.codigo_sillon,
+    CASE 
+        WHEN DATEPART(HOUR, f.fecha) BETWEEN 8 AND 13 THEN 1
+        WHEN DATEPART(HOUR, f.fecha) BETWEEN 14 AND 19 THEN 2
+        ELSE 3
+    END,
+    df.cantidad,
+    df.subtotal
+
+order by t.id_tiempo,
+    f.nro_sucursal,
+    f.nro_cliente,
+    s.codigo_sillon,
+    id_turno,
+    df.cantidad,
+    df.subtotal
+
+
