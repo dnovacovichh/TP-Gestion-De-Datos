@@ -271,3 +271,212 @@ JOIN LOS_HELECHOS.BI_Dim_Tiempo te ON te.anio = YEAR(e.fecha_entrega) AND te.mes
 GROUP BY tp.id_tiempo, te.id_tiempo, f.nro_sucursal, f.nro_cliente;
 
 GO
+
+-- VIEWS --
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Ganancias_Mensuales AS
+WITH Ventas AS (
+    SELECT 
+        t.anio,
+        t.mes,
+        s.id_sucursal,
+        s.provincia,
+        SUM(v.total_venta) AS total_ingresos
+    FROM LOS_HELECHOS.BI_Hecho_Venta v
+    JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
+    JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
+    GROUP BY t.anio, t.mes, s.id_sucursal, s.provincia
+),
+Compras AS (
+    SELECT 
+        t.anio,
+        t.mes,
+        s.id_sucursal,
+        SUM(c.subtotal) AS total_egresos
+    FROM LOS_HELECHOS.BI_Hecho_Compra c
+    JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON c.id_tiempo = t.id_tiempo
+    JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON c.id_sucursal = s.id_sucursal
+    GROUP BY t.anio, t.mes, s.id_sucursal
+)
+SELECT 
+    v.anio,
+    v.mes,
+    v.id_sucursal,
+    v.provincia,
+    ISNULL(v.total_ingresos, 0) AS total_ingresos,
+    ISNULL(c.total_egresos, 0) AS total_egresos,
+    ISNULL(v.total_ingresos, 0) - ISNULL(c.total_egresos, 0) AS ganancias
+FROM Ventas v
+LEFT JOIN Compras c
+  ON v.anio = c.anio AND v.mes = c.mes AND v.id_sucursal = c.id_sucursal;
+
+
+GO
+
+--
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Factura_Promedio_Mensual AS
+SELECT 
+    t.anio,
+    t.cuatrimestre,
+    s.provincia,
+    COUNT(DISTINCT v.id_venta) AS cantidad_facturas,
+    SUM(v.total_venta) AS total_facturado,
+    CASE 
+        WHEN COUNT(DISTINCT v.id_venta) = 0 THEN 0
+        ELSE SUM(v.total_venta) * 1.0 / COUNT(DISTINCT v.id_venta)
+    END AS factura_promedio_mensual
+FROM LOS_HELECHOS.BI_Hecho_Venta v
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
+GROUP BY t.anio, t.cuatrimestre, s.provincia;
+
+GO
+
+--
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Top_Modelos_Cuatrimestral AS
+SELECT *
+FROM (
+    SELECT
+        t.anio,
+        t.cuatrimestre,
+        s.localidad AS localidad_sucursal,
+        c.rango_etario,
+        si.modelo,
+        SUM(v.cantidad) AS total_vendidos,
+        ROW_NUMBER() OVER (
+            PARTITION BY t.anio, t.cuatrimestre, s.localidad, c.rango_etario
+            ORDER BY SUM(v.cantidad) DESC
+        ) AS ranking
+    FROM LOS_HELECHOS.BI_Hecho_Venta v
+    JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
+    JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
+    JOIN LOS_HELECHOS.BI_Dim_Cliente c ON v.id_cliente = c.id_cliente
+    JOIN LOS_HELECHOS.BI_Dim_Sillon si ON v.id_sillon = si.id_sillon
+    GROUP BY t.anio, t.cuatrimestre, s.localidad, c.rango_etario, si.modelo
+) AS sub
+WHERE ranking <= 3;
+
+GO
+
+--
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Volumen_Pedidos AS
+SELECT 
+    t.anio,
+    t.mes,
+    s.id_sucursal,
+    tr.descripcion AS turno,
+    COUNT(*) AS cantidad_pedidos
+FROM LOS_HELECHOS.BI_Hecho_Pedido p
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON p.id_tiempo = t.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
+JOIN LOS_HELECHOS.BI_Dim_Turno tr ON p.id_turno = tr.id_turno
+GROUP BY t.anio, t.mes, s.id_sucursal, tr.descripcion;
+
+GO
+
+--
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Conversion_Pedidos AS
+SELECT 
+    t.anio,
+    t.cuatrimestre,
+    s.id_sucursal,
+    p.estado_pedido,
+    COUNT(*) AS cantidad_pedidos,
+    CAST(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (
+        PARTITION BY t.anio, t.cuatrimestre, s.id_sucursal
+    ) AS DECIMAL(5,2)) AS porcentaje
+FROM LOS_HELECHOS.BI_Hecho_Pedido p
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON p.id_tiempo = t.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
+GROUP BY 
+    t.anio,
+    t.cuatrimestre,
+    s.id_sucursal,
+    p.estado_pedido;
+GO
+
+--
+
+CREATE or alter VIEW LOS_HELECHOS.BI_Vista_Tiempo_Fabricacion AS
+SELECT
+    tp.anio,
+    tp.cuatrimestre,
+    s.id_sucursal,
+    AVG(DATEDIFF(
+        DAY,
+        CAST(CONCAT(tp.anio, RIGHT('00' + CAST(tp.mes AS VARCHAR), 2), '01') AS DATE),
+        CAST(CONCAT(tv.anio, RIGHT('00' + CAST(tv.mes AS VARCHAR), 2), '01') AS DATE)
+    )) AS tiempo_promedio_dias
+FROM LOS_HELECHOS.BI_Hecho_Pedido p
+JOIN LOS_HELECHOS.BI_Dim_Tiempo tp ON p.id_tiempo = tp.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
+JOIN LOS_HELECHOS.BI_Hecho_Venta v
+  ON v.id_cliente = p.id_cliente
+  AND v.id_sucursal = p.id_sucursal
+JOIN LOS_HELECHOS.BI_Dim_Tiempo tv ON v.id_tiempo = tv.id_tiempo
+GROUP BY tp.anio, tp.cuatrimestre, s.id_sucursal;
+GO
+
+--
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Promedio_Compras AS
+SELECT
+    t.anio,
+    t.mes,
+    s.id_sucursal,
+    AVG(c.subtotal) AS promedio_compras
+FROM LOS_HELECHOS.BI_Hecho_Compra c
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON c.id_tiempo = t.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON c.id_sucursal = s.id_sucursal
+GROUP BY t.anio, t.mes, s.id_sucursal;
+GO
+
+--
+
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Compras_Tipo_Material AS
+SELECT
+    t.anio,
+    t.cuatrimestre,
+    s.id_sucursal,
+    c.tipo_material,
+    SUM(c.subtotal) AS total_gastado
+FROM LOS_HELECHOS.BI_Hecho_Compra c
+JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON c.id_tiempo = t.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON c.id_sucursal = s.id_sucursal
+GROUP BY t.anio, t.cuatrimestre, s.id_sucursal, c.tipo_material;
+GO
+
+--
+
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Cumplimiento_Envios AS
+SELECT
+    tp.anio,
+    tp.cuatrimestre,
+    s.id_sucursal,
+    COUNT(CASE WHEN te.id_tiempo <= tp.id_tiempo THEN 1 END) * 100.0 / COUNT(*) AS porcentaje_cumplimiento
+FROM LOS_HELECHOS.BI_Hecho_Envio e
+JOIN LOS_HELECHOS.BI_Dim_Tiempo tp ON e.id_tiempo_programada = tp.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Tiempo te ON e.id_tiempo_entrega = te.id_tiempo
+JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON e.id_sucursal = s.id_sucursal
+GROUP BY tp.anio, tp.cuatrimestre, s.id_sucursal;
+GO
+
+--
+
+CREATE OR ALTER VIEW LOS_HELECHOS.BI_Vista_Localidades_Costo_Envio AS
+SELECT TOP 5 WITH TIES
+    c.localidad,
+    SUM(e.total_envio) AS total_envio
+FROM LOS_HELECHOS.BI_Hecho_Envio e
+JOIN LOS_HELECHOS.BI_Dim_Cliente c ON e.id_cliente = c.id_cliente
+GROUP BY c.localidad
+ORDER BY SUM(e.total_envio) DESC;
+
+
+GO
