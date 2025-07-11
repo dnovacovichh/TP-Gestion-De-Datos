@@ -40,7 +40,12 @@ CREATE TABLE LOS_HELECHOS.BI_Dim_Turno (
     descripcion VARCHAR(50)
 );
 
--- HECHOS AGRUPADOS
+CREATE TABLE LOS_HELECHOS.BI_Dim_EstadoPedido (
+    id_estado INT IDENTITY(1,1) PRIMARY KEY,
+    descripcion VARCHAR(50)
+);
+
+-- HECHOS
 CREATE TABLE LOS_HELECHOS.BI_Hecho_Venta (
     id_tiempo INT,
     id_sucursal INT,
@@ -71,13 +76,14 @@ CREATE TABLE LOS_HELECHOS.BI_Hecho_Pedido (
     id_sucursal INT,
     id_cliente BIGINT,
     id_turno INT,
-    estado_pedido VARCHAR(50),
+    id_estado INT,
     cantidad_items INT,
     total_pedido DECIMAL(18,2),
     FOREIGN KEY (id_tiempo) REFERENCES LOS_HELECHOS.BI_Dim_Tiempo(id_tiempo),
     FOREIGN KEY (id_sucursal) REFERENCES LOS_HELECHOS.BI_Dim_Sucursal(id_sucursal),
     FOREIGN KEY (id_cliente) REFERENCES LOS_HELECHOS.BI_Dim_Cliente(id_cliente),
-    FOREIGN KEY (id_turno) REFERENCES LOS_HELECHOS.BI_Dim_Turno(id_turno)
+    FOREIGN KEY (id_turno) REFERENCES LOS_HELECHOS.BI_Dim_Turno(id_turno),
+    FOREIGN KEY (id_estado) REFERENCES LOS_HELECHOS.BI_Dim_EstadoPedido(id_estado)
 );
 
 CREATE TABLE LOS_HELECHOS.BI_Hecho_Envio (
@@ -162,6 +168,15 @@ JOIN LOS_HELECHOS.Sillon_Modelo sm ON s.codigo_modelo = sm.codigo_modelo
 JOIN LOS_HELECHOS.Sillon_Medida m ON s.id_medida = m.id_medida;
 
 -- ========================================
+-- Inserts para tabla BI_Dim_EstadoPedido
+PRINT 'Insertando datos en tabla BI_Dim_EstadoPedido...';
+-- ========================================
+INSERT INTO LOS_HELECHOS.BI_Dim_EstadoPedido (descripcion)
+SELECT DISTINCT LTRIM(RTRIM(UPPER(estado)))
+FROM LOS_HELECHOS.Pedido
+WHERE estado IS NOT NULL;
+
+-- ========================================
 -- Inserts para tabla BI_Hecho_Venta
 PRINT 'Insertando datos en tabla BI_Hecho_Venta...';
 -- ========================================
@@ -224,13 +239,14 @@ SELECT
         WHEN DATEPART(HOUR, p.fecha) BETWEEN 14 AND 19 THEN 2
         ELSE 3
     END,
-    p.estado,
+    ep.id_estado,
     SUM(ISNULL(dp.cantidad, 0)),
     SUM(p.total)
 FROM LOS_HELECHOS.Pedido p
 LEFT JOIN LOS_HELECHOS.Detalle_Pedido dp ON p.nro_pedido = dp.nro_pedido
 JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON t.anio = YEAR(p.fecha) AND t.mes = MONTH(p.fecha)
-GROUP BY t.id_tiempo, p.nro_sucursal, p.nro_cliente, p.estado,
+JOIN LOS_HELECHOS.BI_Dim_EstadoPedido ep ON LTRIM(RTRIM(UPPER(p.estado))) = ep.descripcion
+GROUP BY t.id_tiempo, p.nro_sucursal, p.nro_cliente, ep.id_estado,
          CASE WHEN DATEPART(HOUR, p.fecha) BETWEEN 8 AND 13 THEN 1
               WHEN DATEPART(HOUR, p.fecha) BETWEEN 14 AND 19 THEN 2
               ELSE 3 END;
@@ -255,6 +271,3 @@ JOIN LOS_HELECHOS.BI_Dim_Tiempo te ON te.anio = YEAR(e.fecha_entrega) AND te.mes
 GROUP BY tp.id_tiempo, te.id_tiempo, f.nro_sucursal, f.nro_cliente;
 
 GO
-
-SELECT * FROM LOS_HELECHOS.BI_Dim_Tiempo
-ORDER BY anio, mes ASC
