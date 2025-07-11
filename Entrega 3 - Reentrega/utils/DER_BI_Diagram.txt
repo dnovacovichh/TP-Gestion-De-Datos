@@ -1,0 +1,83 @@
+// DIMENSIONES
+
+Table BI_Dim_Tiempo {
+  id_tiempo int [pk]
+  anio int
+  mes int
+  cuatrimestre int
+}
+
+Table BI_Dim_Sucursal {
+  id_sucursal int [pk]
+  localidad varchar
+  provincia varchar
+}
+
+Table BI_Dim_Cliente {
+  id_cliente bigint [pk]
+  rango_etario varchar
+  localidad varchar
+  provincia varchar
+}
+
+Table BI_Dim_Sillon {
+  id_sillon bigint [pk]
+  modelo varchar
+  descripcion varchar
+  alto decimal
+  ancho decimal
+  profundidad decimal
+}
+
+Table BI_Dim_Turno {
+  id_turno int [pk]
+  descripcion varchar
+}
+
+// HECHOS
+
+Table BI_Hecho_Venta {
+  id_venta int [pk]
+  id_tiempo int [ref: > BI_Dim_Tiempo.id_tiempo]
+  id_sucursal int [ref: > BI_Dim_Sucursal.id_sucursal]
+  id_cliente bigint [ref: > BI_Dim_Cliente.id_cliente]
+  id_sillon bigint [ref: > BI_Dim_Sillon.id_sillon]
+  id_turno int [ref: > BI_Dim_Turno.id_turno]
+  cantidad bigint
+  total_venta decimal
+}
+
+Table BI_Hecho_Compra {
+  id_compra int [pk]
+  id_tiempo int [ref: > BI_Dim_Tiempo.id_tiempo]
+  id_sucursal int
+  id_proveedor varchar
+  id_material int
+  tipo_material varchar
+  cantidad decimal
+  precio_unitario decimal
+  subtotal decimal
+}
+
+Table BI_Hecho_Pedido {
+  id_pedido int [pk]
+  id_tiempo int [ref: > BI_Dim_Tiempo.id_tiempo]
+  id_sucursal int [ref: > BI_Dim_Sucursal.id_sucursal]
+  id_cliente bigint [ref: > BI_Dim_Cliente.id_cliente]
+  estado_pedido varchar
+  cantidad_items int
+  total_pedido decimal
+  id_turno int [ref: > BI_Dim_Turno.id_turno]
+}
+
+Table BI_Hecho_Envio {
+  id_envio int [pk]
+  id_tiempo_programada int [ref: > BI_Dim_Tiempo.id_tiempo]
+  id_tiempo_entrega int [ref: > BI_Dim_Tiempo.id_tiempo]
+  id_sucursal int [ref: > BI_Dim_Sucursal.id_sucursal]
+  id_cliente bigint [ref: > BI_Dim_Cliente.id_cliente]
+  id_factura bigint
+  importe_traslado decimal
+  importe_subida decimal
+  total_envio decimal
+}
