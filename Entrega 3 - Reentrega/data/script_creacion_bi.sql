@@ -377,11 +377,11 @@ SELECT
     t.anio,
     t.cuatrimestre,
     s.id_sucursal,
-    p.estado_pedido,
+    p.id_turno,
     COUNT(*) AS cantidad_pedidos,
     CAST(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (
         PARTITION BY t.anio, t.cuatrimestre, s.id_sucursal
-    ) AS DECIMAL(5,2)) AS porcentaje
+    ) AS DECIMAL(5,2))  AS porcentaje
 FROM LOS_HELECHOS.BI_Hecho_Pedido p
 JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON p.id_tiempo = t.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
@@ -389,7 +389,8 @@ GROUP BY
     t.anio,
     t.cuatrimestre,
     s.id_sucursal,
-    p.estado_pedido;
+    p.id_turno;
+
 GO
 
 --
