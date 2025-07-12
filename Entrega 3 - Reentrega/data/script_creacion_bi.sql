@@ -356,19 +356,17 @@ WHERE ranking <= 3;
 GO
 
 --
-
-CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Volumen_Pedidos AS
+    
+CREATE or ALTER VIEW LOS_HELECHOS.BI_View_Volumen_Pedidos AS
 SELECT 
     t.anio,
     t.mes,
-    s.id_sucursal,
-    tr.descripcion AS turno,
+    p.id_sucursal,
+    p.id_turno,
     COUNT(*) AS cantidad_pedidos
 FROM LOS_HELECHOS.BI_Hecho_Pedido p
 JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON p.id_tiempo = t.id_tiempo
-JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON p.id_sucursal = s.id_sucursal
-JOIN LOS_HELECHOS.BI_Dim_Turno tr ON p.id_turno = tr.id_turno
-GROUP BY t.anio, t.mes, s.id_sucursal, tr.descripcion;
+GROUP BY t.anio, t.mes, p.id_sucursal, p.id_turno;
 
 GO
 
