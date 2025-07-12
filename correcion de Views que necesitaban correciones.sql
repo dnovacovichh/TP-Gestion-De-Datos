@@ -21,25 +21,6 @@ select * from LOS_HELECHOS.BI_FacturaPromedioMensual
 
 /*VIEW 3*/
 
-CREATE or ALTER VIEW LOS_HELECHOS.BI_RendimientoModelos AS
-SELECT * FROM (
-    SELECT 
-        t.anio,
-        t.cuatrimestre,
-        s.localidad,
-        c.rango_etario,
-        si.modelo,
-        SUM(v.total_venta) AS total_ventas,
-        RANK() OVER (PARTITION BY t.anio, t.cuatrimestre, s.localidad, c.rango_etario ORDER BY SUM(v.total_venta) DESC) AS ranking
-    FROM LOS_HELECHOS.BI_Hecho_Venta v
-    JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
-    JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
-    JOIN LOS_HELECHOS.BI_Dim_Cliente c ON v.id_cliente = c.id_cliente
-    JOIN LOS_HELECHOS.BI_Dim_Sillon si ON v.id_sillon = si.id_sillon
-    GROUP BY t.anio, t.cuatrimestre, s.localidad, c.rango_etario, si.modelo
-) AS modelos
-WHERE ranking <= 3;
-
 select * from LOS_HELECHOS.BI_RendimientoModelos 
 
 /*VIEW 4*/
