@@ -1,6 +1,6 @@
 /*VIEW 1*/
 
-CREATE or ALTER VIEW LOS_HELECHOS.VW_Ganancias AS
+CREATE or ALTER VIEW LOS_HELECHOS.BI_Ganancias AS
 SELECT 
     t.anio,
     t.mes,
@@ -12,11 +12,11 @@ JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
 LEFT JOIN LOS_HELECHOS.BI_Hecho_Compra c ON c.id_tiempo = t.id_tiempo AND c.id_sucursal = s.id_sucursal
 GROUP BY t.anio, t.mes, s.id_sucursal;
 
-select * from LOS_HELECHOS.VW_Ganancias 
+select * from LOS_HELECHOS.BI_Ganancias 
 
 /*VIEW 2*/
 
-CREATE or ALTER VIEW LOS_HELECHOS.VW_FacturaPromedioMensual AS
+CREATE or ALTER VIEW LOS_HELECHOS.BI_FacturaPromedioMensual AS
 SELECT 
     t.anio,
     t.cuatrimestre,
@@ -28,12 +28,12 @@ JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
 GROUP BY t.anio, t.cuatrimestre, s.provincia, s.id_sucursal
 
-select * from LOS_HELECHOS.VW_FacturaPromedioMensual
+select * from LOS_HELECHOS.BI_FacturaPromedioMensual
 
 
 /*VIEW 3*/
 
-CREATE or ALTER VIEW LOS_HELECHOS.VW_RendimientoModelos AS
+CREATE or ALTER VIEW LOS_HELECHOS.BI_RendimientoModelos AS
 SELECT * FROM (
     SELECT 
         t.anio,
@@ -52,11 +52,11 @@ SELECT * FROM (
 ) AS modelos
 WHERE ranking <= 3;
 
-select * from LOS_HELECHOS.VW_RendimientoModelos 
+select * from LOS_HELECHOS.BI_RendimientoModelos 
 
 /*VIEW 4*/
 
-CREATE or ALTER VIEW LOS_HELECHOS.VW_VolumenPedidos AS
+CREATE or ALTER VIEW LOS_HELECHOS.BI_VolumenPedidos AS
 SELECT 
     t.anio,
     t.mes,
@@ -67,7 +67,7 @@ FROM LOS_HELECHOS.BI_Hecho_Pedido p
 JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON p.id_tiempo = t.id_tiempo
 GROUP BY t.anio, t.mes, p.id_sucursal, p.id_turno;
  
-select * from LOS_HELECHOS.VW_VolumenPedidos
+select * from LOS_HELECHOS.BI_VolumenPedidos
 
 
 /*VIEW 5*/
