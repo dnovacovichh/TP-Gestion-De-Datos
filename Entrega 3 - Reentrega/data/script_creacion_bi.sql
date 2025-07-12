@@ -314,22 +314,17 @@ LEFT JOIN Compras c
 GO
 
 --
-
-CREATE OR ALTER VIEW LOS_HELECHOS.BI_View_Factura_Promedio_Mensual AS
+CREATE or ALTER VIEW LOS_HELECHOS.BI_View_Factura_Promedio_Mensual AS
 SELECT 
     t.anio,
     t.cuatrimestre,
     s.provincia,
-    COUNT(DISTINCT v.id_venta) AS cantidad_facturas,
-    SUM(v.total_venta) AS total_facturado,
-    CASE 
-        WHEN COUNT(DISTINCT v.id_venta) = 0 THEN 0
-        ELSE SUM(v.total_venta) * 1.0 / COUNT(DISTINCT v.id_venta)
-    END AS factura_promedio_mensual
+    s.id_sucursal,
+    AVG(v.total_venta) AS factura_promedio
 FROM LOS_HELECHOS.BI_Hecho_Venta v
 JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
 JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
-GROUP BY t.anio, t.cuatrimestre, s.provincia;
+GROUP BY t.anio, t.cuatrimestre, s.provincia, s.id_sucursal;
 
 GO
 
