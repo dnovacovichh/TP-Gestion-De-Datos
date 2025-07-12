@@ -1,17 +1,5 @@
 /*VIEW 1*/
 
-CREATE or ALTER VIEW LOS_HELECHOS.BI_Ganancias AS
-SELECT 
-    t.anio,
-    t.mes,
-    s.id_sucursal,
-    SUM(v.total_venta) - ISNULL(SUM(c.subtotal), 0) AS TotalIngresoEgreso
-FROM LOS_HELECHOS.BI_Hecho_Venta v
-JOIN LOS_HELECHOS.BI_Dim_Tiempo t ON v.id_tiempo = t.id_tiempo
-JOIN LOS_HELECHOS.BI_Dim_Sucursal s ON v.id_sucursal = s.id_sucursal
-LEFT JOIN LOS_HELECHOS.BI_Hecho_Compra c ON c.id_tiempo = t.id_tiempo AND c.id_sucursal = s.id_sucursal
-GROUP BY t.anio, t.mes, s.id_sucursal;
-
 select * from LOS_HELECHOS.BI_Ganancias 
 
 /*VIEW 2*/
